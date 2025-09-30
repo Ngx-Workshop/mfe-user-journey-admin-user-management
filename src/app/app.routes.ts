@@ -1,10 +1,17 @@
 import { Route } from '@angular/router';
-import App from './app';
+import { userAuthenticatedGuard } from '@tmdjr/ngx-user-metadata';
+import { UserMetadataPageComponent } from './components/user-metadata';
 
 export const Routes: Route[] = [
-  { path: '', redirectTo: 'hello-world', pathMatch: 'full' },
   {
-    path: 'hello-world',
-    component: App,
+    path: '',
+    canActivate: [userAuthenticatedGuard],
+    children: [
+      { path: '', redirectTo: 'user-metadata', pathMatch: 'full' },
+      {
+        path: 'user-metadata',
+        component: UserMetadataPageComponent,
+      },
+    ],
   },
 ];
