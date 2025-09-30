@@ -122,7 +122,7 @@ export type UserMetadataFormSubmitEvent =
             Cancel
           </button>
           <button
-            mat-flat-button
+            matButton="outlined"
             color="primary"
             type="submit"
             [disabled]="loading"

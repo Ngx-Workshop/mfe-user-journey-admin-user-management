@@ -103,6 +103,9 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
   </section> `,
   styles: [
     `
+      :host {
+        width: 100%;
+      }
       .list-container {
         display: flex;
         flex-direction: column;

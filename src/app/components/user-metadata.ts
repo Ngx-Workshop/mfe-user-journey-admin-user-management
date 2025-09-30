@@ -46,7 +46,7 @@ import { UserMetadataListComponent } from './user-metadata-list';
   template: `
     <ngx-menu-management-header></ngx-menu-management-header>
     <section class="page">
-      <div class="content">
+      <div class="content" [class.content--with-form]="formOpen()">
         <mat-card class="list-card">
           @if (!loading()) {
           <div class="list-wrapper">
@@ -94,13 +94,28 @@ import { UserMetadataListComponent } from './user-metadata-list';
         padding: 1.5rem;
       }
       .content {
-        display: grid;
-        grid-template-columns: 2fr minmax(320px, 1fr);
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-start;
         gap: 2rem;
+      }
+
+      .content--with-form {
+        flex-wrap: nowrap;
+        justify-content: space-between;
       }
 
       .list-card {
         padding: 1rem;
+        flex: 0 1 clamp(320px, 70vw, 1400px);
+        max-width: 100%;
+      }
+
+      .content--with-form .list-card {
+        flex: 1 1 0%;
+        max-width: none;
       }
 
       .list-wrapper {
@@ -112,7 +127,9 @@ import { UserMetadataListComponent } from './user-metadata-list';
       .form-container {
         position: sticky;
         top: 1.5rem;
-        align-self: start;
+        align-self: flex-start;
+        flex: 0 0 clamp(320px, 28vw, 420px);
+        animation: form-container-slide-in 300ms ease;
       }
 
       .loading-state {
@@ -124,13 +141,35 @@ import { UserMetadataListComponent } from './user-metadata-list';
         color: rgba(0, 0, 0, 0.6);
       }
 
+      @keyframes form-container-slide-in {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
       @media (max-width: 1024px) {
-        .content {
-          grid-template-columns: 1fr;
+        .content,
+        .content--with-form {
+          flex-direction: column;
+          flex-wrap: wrap;
+          justify-content: flex-start;
+        }
+
+        .list-card {
+          flex: 1 1 100%;
+          max-width: none;
         }
 
         .form-container {
           position: static;
+          width: 100%;
+          flex: 1 1 auto;
         }
       }
     `,
