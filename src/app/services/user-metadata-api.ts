@@ -48,7 +48,6 @@ export class UserMetadataService {
 
   findOne(uuid: string): Observable<UserMetadataDto> {
     const params = new HttpParams().set('uuid', uuid);
-
     return this.http.get<UserMetadataDto>(this.baseUrl, { params });
   }
 
@@ -58,31 +57,17 @@ export class UserMetadataService {
     return this.http.post<UserMetadataDto>(this.baseUrl, payload);
   }
 
-  upsert(
-    payload: UpdateUserMetadataDto & { uuid: string }
-  ): Observable<UserMetadataDto> {
-    const { uuid, ...update } = payload;
-    const params = new HttpParams().set('uuid', uuid);
-
-    return this.http.put<UserMetadataDto>(this.baseUrl, update, {
-      params,
-    });
-  }
-
   update(
     uuid: string,
     payload: UpdateUserMetadataDto
   ): Observable<UserMetadataDto> {
     const params = new HttpParams().set('uuid', uuid);
-
     return this.http.patch<UserMetadataDto>(this.baseUrl, payload, {
       params,
     });
   }
 
   remove(uuid: string): Observable<void> {
-    const params = new HttpParams().set('uuid', uuid);
-
-    return this.http.delete<void>(this.baseUrl, { params });
+    return this.http.delete<void>(this.baseUrl + '/' + uuid);
   }
 }

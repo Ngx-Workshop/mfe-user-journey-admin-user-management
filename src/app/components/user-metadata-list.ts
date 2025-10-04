@@ -53,6 +53,12 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
           {{ item.email || '—' }}
         </td>
       </ng-container>
+      <ng-container matColumnDef="role">
+        <th mat-header-cell *matHeaderCellDef>Role</th>
+        <td mat-cell *matCellDef="let item">
+          {{ item.role || '—' }}
+        </td>
+      </ng-container>
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef class="actions-column">
           Actions
@@ -159,10 +165,11 @@ export class UserMetadataListComponent {
   remove = new EventEmitter<UserMetadataDto>();
 
   readonly displayedColumns = [
+    'role',
     'uuid',
+    'email',
     'firstName',
     'lastName',
-    'email',
     'actions',
   ];
 

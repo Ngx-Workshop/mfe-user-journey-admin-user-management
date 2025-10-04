@@ -1,12 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   inject,
   signal,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {
@@ -16,13 +16,15 @@ import {
 import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
 import {
   EMPTY,
-  Observable,
   catchError,
+  defaultIfEmpty,
   finalize,
   lastValueFrom,
+  switchMap,
   tap,
 } from 'rxjs';
 import { UserMetadataService } from '../services/user-metadata-api';
+import { ConfirmDeleteDialog } from './delete-confirm';
 import { HeaderComponent } from './header.component';
 import {
   UserMetadataFormComponent,
@@ -57,7 +59,7 @@ import { UserMetadataListComponent } from './user-metadata-list';
               [pageSize]="pagination().limit"
               (paginationChange)="handlePaginationChange($event)"
               (edit)="openEditForm($event)"
-              (remove)="handleDelete($event)"
+              (remove)="deleteRemote($event)"
             ></ngx-user-metadata-list>
           </div>
           } @else {
@@ -74,7 +76,6 @@ import { UserMetadataListComponent } from './user-metadata-list';
         @if (formOpen()) {
         <aside class="form-container">
           <ngx-user-metadata-form
-            [mode]="formMode()"
             [value]="selectedUser()"
             [loading]="saving()"
             (submitForm)="handleSubmit($event)"
@@ -177,6 +178,7 @@ import { UserMetadataListComponent } from './user-metadata-list';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserMetadataPageComponent {
+  private readonly dialog = inject(MatDialog);
   private readonly service = inject(UserMetadataService);
   private readonly snackBar = inject(MatSnackBar);
 
@@ -185,13 +187,8 @@ export class UserMetadataPageComponent {
   readonly items = signal<UserMetadataDto[]>([]);
   readonly pagination = signal({ page: 1, limit: 10, total: 0 });
   readonly selectedUser = signal<UserMetadataDto | null>(null);
-  private readonly formState = signal<{
-    open: boolean;
-    mode: 'create' | 'edit';
-  }>({ open: false, mode: 'create' });
 
-  readonly formOpen = computed(() => this.formState().open);
-  readonly formMode = computed(() => this.formState().mode);
+  readonly formOpen = signal(false);
 
   constructor() {
     this.loadPage();
@@ -222,18 +219,13 @@ export class UserMetadataPageComponent {
     );
   }
 
-  openCreateForm(): void {
-    this.selectedUser.set(null);
-    this.formState.set({ open: true, mode: 'create' });
-  }
-
   openEditForm(user: UserMetadataDto): void {
     this.selectedUser.set(user);
-    this.formState.set({ open: true, mode: 'edit' });
+    this.formOpen.set(true);
   }
 
   closeForm(): void {
-    this.formState.set({ open: false, mode: 'create' });
+    this.formOpen.set(false);
     this.selectedUser.set(null);
   }
 
@@ -251,23 +243,12 @@ export class UserMetadataPageComponent {
 
   handleSubmit(event: UserMetadataFormSubmitEvent): void {
     this.saving.set(true);
-
-    let request$: Observable<UserMetadataDto>;
-
-    if (event.type === 'create') {
-      request$ = this.service.create(event.payload);
-    } else {
-      request$ = this.service.update(event.uuid, event.payload);
-    }
-
     lastValueFrom(
-      request$.pipe(
+      this.service.update(event.uuid, event.payload).pipe(
         tap(() => {
-          const message =
-            event.type === 'create'
-              ? 'User metadata created'
-              : 'User metadata updated';
-          this.snackBar.open(message, 'Dismiss', { duration: 3000 });
+          this.snackBar.open('User metadata updated', 'Dismiss', {
+            duration: 3000,
+          });
           this.closeForm();
           this.loadPage();
         }),
@@ -280,32 +261,34 @@ export class UserMetadataPageComponent {
     );
   }
 
-  handleDelete(user: UserMetadataDto): void {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete metadata for ${user.uuid}?`
+  handleDelete(uuid: string) {
+    return this.service.remove(uuid).pipe(
+      tap(() => {
+        this.snackBar.open('User metadata deleted', 'Dismiss', {
+          duration: 3000,
+        });
+        const currentPage = this.pagination().page;
+        this.loadPage(currentPage, this.pagination().limit);
+      }),
+      catchError((error) => {
+        this.handleError('Unable to delete user metadata', error);
+        return EMPTY;
+      }),
+      finalize(() => this.loading.set(false))
     );
+  }
 
-    if (!confirmed) {
-      return;
-    }
-
-    this.loading.set(true);
-
+  deleteRemote(user: UserMetadataDto) {
     lastValueFrom(
-      this.service.remove(user.uuid).pipe(
-        tap(() => {
-          this.snackBar.open('User metadata deleted', 'Dismiss', {
-            duration: 3000,
-          });
-          const currentPage = this.pagination().page;
-          this.loadPage(currentPage, this.pagination().limit);
-        }),
-        catchError((error) => {
-          this.handleError('Unable to delete user metadata', error);
-          return EMPTY;
-        }),
-        finalize(() => this.loading.set(false))
-      )
+      this.dialog
+        .open(ConfirmDeleteDialog, { data: user })
+        .afterClosed()
+        .pipe(
+          switchMap((mfeRemote) =>
+            mfeRemote ? this.handleDelete(user.uuid) : EMPTY
+          ),
+          defaultIfEmpty(void 0)
+        )
     );
   }
 

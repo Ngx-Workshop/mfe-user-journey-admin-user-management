@@ -18,15 +18,18 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
 import {
   CreateUserMetadataDto,
   UpdateUserMetadataDto,
   UserMetadataDto,
 } from '@tmdjr/user-metadata-contracts';
 
-export type UserMetadataFormSubmitEvent =
-  | { type: 'create'; payload: CreateUserMetadataDto }
-  | { type: 'update'; uuid: string; payload: UpdateUserMetadataDto };
+export type UserMetadataFormSubmitEvent = {
+  type: 'update';
+  uuid: string;
+  payload: UpdateUserMetadataDto;
+};
 
 @Component({
   selector: 'ngx-user-metadata-form',
@@ -38,6 +41,7 @@ export type UserMetadataFormSubmitEvent =
     MatInputModule,
     MatButtonModule,
     MatProgressSpinnerModule,
+    MatSelectModule,
   ],
   template: `
     <form
@@ -47,19 +51,9 @@ export type UserMetadataFormSubmitEvent =
     >
       <mat-card>
         <mat-card-header>
-          <mat-card-title>
-            {{
-              mode === 'create'
-                ? 'Create user metadata'
-                : 'Edit user metadata'
-            }}
-          </mat-card-title>
+          <mat-card-title> Edit user metadata </mat-card-title>
           <mat-card-subtitle>
-            {{
-              mode === 'create'
-                ? 'Fill in the details below to create a new profile entry.'
-                : 'Update the selected user profile as needed.'
-            }}
+            Update the selected user profile as needed.
           </mat-card-subtitle>
         </mat-card-header>
 
@@ -67,10 +61,20 @@ export type UserMetadataFormSubmitEvent =
           <div class="field-grid">
             <mat-form-field appearance="outline">
               <mat-label>User UUID</mat-label>
-              <input matInput formControlName="uuid" required />
-              @if (form.controls.uuid.hasError('required')) {
-              <mat-error> UUID is required </mat-error>
-              }
+              <input
+                matInput
+                formControlName="uuid"
+                [disabled]="true"
+              />
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Role</mat-label>
+              <mat-select formControlName="role">
+                @for (role of roleTypes; track role) {
+                <mat-option [value]="role">{{ role }}</mat-option>
+                }
+              </mat-select>
             </mat-form-field>
 
             <mat-form-field appearance="outline">
@@ -133,9 +137,7 @@ export type UserMetadataFormSubmitEvent =
               diameter="20"
             ></mat-progress-spinner>
             } @if (!loading) {
-            <span>{{
-              mode === 'create' ? 'Create' : 'Save changes'
-            }}</span>
+            <span>Save changes</span>
             }
           </button>
         </mat-card-actions>
@@ -179,17 +181,20 @@ export type UserMetadataFormSubmitEvent =
 export class UserMetadataFormComponent implements OnChanges {
   private readonly fb = inject(FormBuilder);
 
+  readonly roleTypes: UserMetadataDto['role'][] = [
+    'admin',
+    'publisher',
+    'regular',
+  ];
   readonly form = this.fb.nonNullable.group({
     uuid: ['', [Validators.required]],
+    role: [''],
     firstName: [''],
     lastName: [''],
     email: ['', [Validators.email]],
     avatarUrl: [''],
     description: [''],
   });
-
-  @Input()
-  mode: 'create' | 'edit' = 'create';
 
   @Input()
   value: UserMetadataDto | null = null;
@@ -204,40 +209,16 @@ export class UserMetadataFormComponent implements OnChanges {
   submitForm = new EventEmitter<UserMetadataFormSubmitEvent>();
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['mode']) {
-      if (this.mode === 'edit') {
-        this.form.controls.uuid.disable({ emitEvent: false });
-      } else {
-        this.form.controls.uuid.enable({ emitEvent: false });
-      }
-    }
-
     if (changes['value'] && this.value) {
       this.form.reset({
         uuid: this.value.uuid,
+        role: this.value.role,
         firstName: this.value.firstName ?? '',
         lastName: this.value.lastName ?? '',
         email: this.value.email ?? '',
         avatarUrl: this.value.avatarUrl ?? '',
         description: this.value.description ?? '',
       });
-      if (this.mode === 'edit') {
-        this.form.controls.uuid.disable({ emitEvent: false });
-      }
-    }
-
-    if (changes['value'] && !this.value) {
-      this.form.reset({
-        uuid: '',
-        firstName: '',
-        lastName: '',
-        email: '',
-        avatarUrl: '',
-        description: '',
-      });
-      if (this.mode === 'edit') {
-        this.form.controls.uuid.disable({ emitEvent: false });
-      }
     }
   }
 
@@ -248,23 +229,11 @@ export class UserMetadataFormComponent implements OnChanges {
     }
 
     const rawValue = this.form.getRawValue();
-
-    if (this.mode === 'create') {
-      const payload: CreateUserMetadataDto = {
-        uuid: rawValue.uuid.trim(),
-        firstName: this.trimOrUndefined(rawValue.firstName),
-        lastName: this.trimOrUndefined(rawValue.lastName),
-        email: this.trimOrUndefined(rawValue.email),
-        avatarUrl: this.trimOrUndefined(rawValue.avatarUrl),
-        description: this.trimOrUndefined(rawValue.description),
-      };
-      this.submitForm.emit({ type: 'create', payload });
-      return;
-    }
-
+    const role = rawValue.role as CreateUserMetadataDto['role'];
     const uuid = this.value?.uuid ?? rawValue.uuid.trim();
     const payload: UpdateUserMetadataDto = {
       uuid: this.trimOrUndefined(rawValue.uuid),
+      role: rawValue.role ? role : undefined,
       firstName: this.trimOrUndefined(rawValue.firstName),
       lastName: this.trimOrUndefined(rawValue.lastName),
       email: this.trimOrUndefined(rawValue.email),
