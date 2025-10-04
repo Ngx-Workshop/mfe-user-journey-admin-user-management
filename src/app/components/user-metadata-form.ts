@@ -20,7 +20,6 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import {
-  CreateUserMetadataDto,
   UpdateUserMetadataDto,
   UserMetadataDto,
 } from '@tmdjr/user-metadata-contracts';
@@ -66,15 +65,6 @@ export type UserMetadataFormSubmitEvent = {
                 formControlName="uuid"
                 [disabled]="true"
               />
-            </mat-form-field>
-
-            <mat-form-field>
-              <mat-label>Role</mat-label>
-              <mat-select formControlName="role">
-                @for (role of roleTypes; track role) {
-                <mat-option [value]="role">{{ role }}</mat-option>
-                }
-              </mat-select>
             </mat-form-field>
 
             <mat-form-field appearance="outline">
@@ -181,14 +171,8 @@ export type UserMetadataFormSubmitEvent = {
 export class UserMetadataFormComponent implements OnChanges {
   private readonly fb = inject(FormBuilder);
 
-  readonly roleTypes: UserMetadataDto['role'][] = [
-    'admin',
-    'publisher',
-    'regular',
-  ];
   readonly form = this.fb.nonNullable.group({
     uuid: ['', [Validators.required]],
-    role: [''],
     firstName: [''],
     lastName: [''],
     email: ['', [Validators.email]],
@@ -212,7 +196,6 @@ export class UserMetadataFormComponent implements OnChanges {
     if (changes['value'] && this.value) {
       this.form.reset({
         uuid: this.value.uuid,
-        role: this.value.role,
         firstName: this.value.firstName ?? '',
         lastName: this.value.lastName ?? '',
         email: this.value.email ?? '',
@@ -229,11 +212,9 @@ export class UserMetadataFormComponent implements OnChanges {
     }
 
     const rawValue = this.form.getRawValue();
-    const role = rawValue.role as CreateUserMetadataDto['role'];
     const uuid = this.value?.uuid ?? rawValue.uuid.trim();
     const payload: UpdateUserMetadataDto = {
       uuid: this.trimOrUndefined(rawValue.uuid),
-      role: rawValue.role ? role : undefined,
       firstName: this.trimOrUndefined(rawValue.firstName),
       lastName: this.trimOrUndefined(rawValue.lastName),
       email: this.trimOrUndefined(rawValue.email),

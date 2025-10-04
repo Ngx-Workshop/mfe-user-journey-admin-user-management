@@ -60,6 +60,7 @@ import { UserMetadataListComponent } from './user-metadata-list';
               (paginationChange)="handlePaginationChange($event)"
               (edit)="openEditForm($event)"
               (remove)="deleteRemote($event)"
+              (updateUserRole)="updateUserRole($event)"
             ></ngx-user-metadata-list>
           </div>
           } @else {
@@ -289,6 +290,25 @@ export class UserMetadataPageComponent {
           ),
           defaultIfEmpty(void 0)
         )
+    );
+  }
+
+  updateUserRole(user: UserMetadataDto) {
+    this.saving.set(true);
+    lastValueFrom(
+      this.service.updateUserRole(user.uuid, user.role).pipe(
+        tap(() => {
+          this.snackBar.open('User role updated', 'Dismiss', {
+            duration: 3000,
+          });
+          this.loadPage();
+        }),
+        catchError((error) => {
+          this.handleError('Unable to update user role', error);
+          return EMPTY;
+        }),
+        finalize(() => this.saving.set(false))
+      )
     );
   }
 

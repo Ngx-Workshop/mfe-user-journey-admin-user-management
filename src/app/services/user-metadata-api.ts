@@ -1,7 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import {
-  CreateUserMetadataDto,
   UpdateUserMetadataDto,
   UserMetadataDto,
 } from '@tmdjr/user-metadata-contracts';
@@ -51,23 +50,27 @@ export class UserMetadataService {
     return this.http.get<UserMetadataDto>(this.baseUrl, { params });
   }
 
-  create(
-    payload: CreateUserMetadataDto
-  ): Observable<UserMetadataDto> {
-    return this.http.post<UserMetadataDto>(this.baseUrl, payload);
-  }
-
   update(
     uuid: string,
     payload: UpdateUserMetadataDto
   ): Observable<UserMetadataDto> {
-    const params = new HttpParams().set('uuid', uuid);
-    return this.http.patch<UserMetadataDto>(this.baseUrl, payload, {
-      params,
-    });
+    return this.http.patch<UserMetadataDto>(
+      `${this.baseUrl}/${uuid}/admin-override`,
+      payload
+    );
   }
 
   remove(uuid: string): Observable<void> {
     return this.http.delete<void>(this.baseUrl + '/' + uuid);
+  }
+
+  updateUserRole(
+    uuid: string,
+    newRole: UserMetadataDto['role']
+  ): Observable<UserMetadataDto> {
+    return this.http.patch<UserMetadataDto>(
+      `${this.baseUrl}/${uuid}/role`,
+      { role: newRole }
+    );
   }
 }

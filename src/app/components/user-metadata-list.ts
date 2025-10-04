@@ -6,11 +6,13 @@ import {
   Output,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import {
   MatPaginatorModule,
   PageEvent,
 } from '@angular/material/paginator';
+import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
@@ -24,6 +26,8 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
     MatButtonModule,
     MatIconModule,
     MatTooltipModule,
+    MatFormFieldModule,
+    MatSelectModule,
   ],
   template: `<section
     class="list-container"
@@ -56,7 +60,18 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
       <ng-container matColumnDef="role">
         <th mat-header-cell *matHeaderCellDef>Role</th>
         <td mat-cell *matCellDef="let item">
-          {{ item.role || '—' }}
+          <!-- {{ item.role || '—' }} -->
+          <mat-select
+            class="role-select"
+            hideSingleSelectionIndicator
+            formControlName="role"
+            [value]="item.role"
+            (valueChange)="roleChange(item, $event)"
+          >
+            @for (role of roleTypes; track role) {
+            <mat-option [value]="role">{{ role }}</mat-option>
+            }
+          </mat-select>
         </td>
       </ng-container>
       <ng-container matColumnDef="actions">
@@ -109,6 +124,7 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
   </section> `,
   styles: [
     `
+      @use '@angular/material' as mat;
       :host {
         width: 100%;
       }
@@ -133,6 +149,11 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
       }
 
       .empty-state .hint {
+        font-size: 0.85rem;
+      }
+
+      .role-select {
+        width: 100px;
         font-size: 0.85rem;
       }
     `,
@@ -164,6 +185,15 @@ export class UserMetadataListComponent {
   @Output()
   remove = new EventEmitter<UserMetadataDto>();
 
+  @Output()
+  updateUserRole = new EventEmitter<UserMetadataDto>();
+
+  readonly roleTypes: UserMetadataDto['role'][] = [
+    'admin',
+    'publisher',
+    'regular',
+  ];
+
   readonly displayedColumns = [
     'role',
     'uuid',
@@ -186,5 +216,13 @@ export class UserMetadataListComponent {
 
   onRemove(user: UserMetadataDto): void {
     this.remove.emit(user);
+  }
+
+  roleChange(
+    user: UserMetadataDto,
+    newRole: UserMetadataDto['role']
+  ): void {
+    const updatedUser = { ...user, role: newRole };
+    this.updateUserRole.emit(updatedUser);
   }
 }
