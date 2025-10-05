@@ -13,7 +13,10 @@ import {
   MatSnackBar,
   MatSnackBarModule,
 } from '@angular/material/snack-bar';
-import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
+import {
+  UpdateUserMetadataDto,
+  UserMetadataDto,
+} from '@tmdjr/user-metadata-contracts';
 import {
   EMPTY,
   catchError,
@@ -26,10 +29,7 @@ import {
 import { UserMetadataService } from '../services/user-metadata-api';
 import { ConfirmDeleteDialog } from './delete-confirm';
 import { HeaderComponent } from './header.component';
-import {
-  UserMetadataFormComponent,
-  UserMetadataFormSubmitEvent,
-} from './user-metadata-form';
+import { UserMetadataFormComponent } from './user-metadata-form';
 import { UserMetadataListComponent } from './user-metadata-list';
 
 @Component({
@@ -242,10 +242,10 @@ export class UserMetadataPageComponent {
     this.loadPage(event.page, event.limit);
   }
 
-  handleSubmit(event: UserMetadataFormSubmitEvent): void {
+  handleSubmit(userMetadata: UpdateUserMetadataDto): void {
     this.saving.set(true);
     lastValueFrom(
-      this.service.update(event.uuid, event.payload).pipe(
+      this.service.update(userMetadata).pipe(
         tap(() => {
           this.snackBar.open('User metadata updated', 'Dismiss', {
             duration: 3000,

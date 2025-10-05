@@ -50,10 +50,10 @@ export class UserMetadataService {
     return this.http.get<UserMetadataDto>(this.baseUrl, { params });
   }
 
-  update(
-    uuid: string,
-    payload: UpdateUserMetadataDto
-  ): Observable<UserMetadataDto> {
+  update({
+    uuid,
+    ...payload
+  }: UpdateUserMetadataDto): Observable<UserMetadataDto> {
     return this.http.patch<UserMetadataDto>(
       `${this.baseUrl}/${uuid}/admin-override`,
       payload

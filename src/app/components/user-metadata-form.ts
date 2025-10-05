@@ -24,12 +24,6 @@ import {
   UserMetadataDto,
 } from '@tmdjr/user-metadata-contracts';
 
-export type UserMetadataFormSubmitEvent = {
-  type: 'update';
-  uuid: string;
-  payload: UpdateUserMetadataDto;
-};
-
 @Component({
   selector: 'ngx-user-metadata-form',
   standalone: true,
@@ -190,7 +184,7 @@ export class UserMetadataFormComponent implements OnChanges {
   cancel = new EventEmitter<void>();
 
   @Output()
-  submitForm = new EventEmitter<UserMetadataFormSubmitEvent>();
+  submitForm = new EventEmitter<UpdateUserMetadataDto>();
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['value'] && this.value) {
@@ -212,7 +206,6 @@ export class UserMetadataFormComponent implements OnChanges {
     }
 
     const rawValue = this.form.getRawValue();
-    const uuid = this.value?.uuid ?? rawValue.uuid.trim();
     const payload: UpdateUserMetadataDto = {
       uuid: this.trimOrUndefined(rawValue.uuid),
       firstName: this.trimOrUndefined(rawValue.firstName),
@@ -222,7 +215,7 @@ export class UserMetadataFormComponent implements OnChanges {
       description: this.trimOrUndefined(rawValue.description),
     };
 
-    this.submitForm.emit({ type: 'update', uuid, payload });
+    this.submitForm.emit(payload);
   }
 
   onCancel(): void {
