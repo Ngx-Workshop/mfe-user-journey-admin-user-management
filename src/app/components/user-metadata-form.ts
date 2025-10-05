@@ -54,11 +54,7 @@ import {
           <div class="field-grid">
             <mat-form-field appearance="outline">
               <mat-label>User UUID</mat-label>
-              <input
-                matInput
-                formControlName="uuid"
-                [disabled]="true"
-              />
+              <input matInput formControlName="uuid" />
             </mat-form-field>
 
             <mat-form-field appearance="outline">
@@ -189,7 +185,7 @@ export class UserMetadataFormComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['value'] && this.value) {
       this.form.reset({
-        uuid: this.value.uuid,
+        uuid: { value: this.value.uuid, disabled: true },
         firstName: this.value.firstName ?? '',
         lastName: this.value.lastName ?? '',
         email: this.value.email ?? '',
