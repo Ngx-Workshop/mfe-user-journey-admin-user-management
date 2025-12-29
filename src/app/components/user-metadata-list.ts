@@ -41,6 +41,23 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
       ></mat-paginator>
       @if (data.length) {
       <table mat-table [dataSource]="data" class="table">
+        <ng-container matColumnDef="role">
+          <th mat-header-cell *matHeaderCellDef>Role</th>
+          <td mat-cell *matCellDef="let item">
+            <!-- {{ item.role || '—' }} -->
+            <mat-select
+              class="role-select"
+              hideSingleSelectionIndicator
+              formControlName="role"
+              [value]="item.role"
+              (valueChange)="roleChange(item, $event)"
+            >
+              @for (role of roleTypes; track role) {
+              <mat-option [value]="role">{{ role }}</mat-option>
+              }
+            </mat-select>
+          </td>
+        </ng-container>
         <ng-container matColumnDef="uuid">
           <th mat-header-cell *matHeaderCellDef>UUID</th>
           <td mat-cell *matCellDef="let item">{{ item.uuid }}</td>
@@ -61,23 +78,6 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
           <th mat-header-cell *matHeaderCellDef>Email</th>
           <td mat-cell *matCellDef="let item">
             {{ item.email || '—' }}
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="role">
-          <th mat-header-cell *matHeaderCellDef>Role</th>
-          <td mat-cell *matCellDef="let item">
-            <!-- {{ item.role || '—' }} -->
-            <mat-select
-              class="role-select"
-              hideSingleSelectionIndicator
-              formControlName="role"
-              [value]="item.role"
-              (valueChange)="roleChange(item, $event)"
-            >
-              @for (role of roleTypes; track role) {
-              <mat-option [value]="role">{{ role }}</mat-option>
-              }
-            </mat-select>
           </td>
         </ng-container>
         <ng-container matColumnDef="actions">

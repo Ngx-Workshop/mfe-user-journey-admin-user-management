@@ -10,6 +10,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
 
 @Component({
   selector: 'ngx-user-metadata-filters',
@@ -46,22 +47,11 @@ import { MatSelectModule } from '@angular/material/select';
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="subject">
-          <mat-label>Subject</mat-label>
+          <mat-label>Roles</mat-label>
           <mat-select>
-            <mat-option value="ALL">All</mat-option>
-            <mat-option value="ANGULAR">Angular</mat-option>
-            <mat-option value="NESTJS">NestJS</mat-option>
-            <mat-option value="RXJS">RxJS</mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
-      <div class="filter-row">
-        <mat-form-field appearance="outline" class="sort">
-          <mat-label>Sort</mat-label>
-          <mat-select>
-            <mat-option value="updated">Recently updated</mat-option>
-            <mat-option value="name">Name A→Z</mat-option>
-            <mat-option value="level">Level high→low</mat-option>
+            @for (role of roleTypes; track $index) {
+            <mat-option [value]="role">{{ role }}</mat-option>
+            }
           </mat-select>
         </mat-form-field>
       </div>
@@ -95,12 +85,6 @@ import { MatSelectModule } from '@angular/material/select';
         &:last-child {
           margin-bottom: 0;
         }
-        .level {
-          width: 140px;
-        }
-        .sort {
-          width: 180px;
-        }
       }
 
       .search-bar {
@@ -113,4 +97,9 @@ import { MatSelectModule } from '@angular/material/select';
 })
 export class UserMetadataFiltersComponent {
   readonly query = signal('');
+  readonly roleTypes: UserMetadataDto['role'][] = [
+    'admin',
+    'publisher',
+    'regular',
+  ];
 }
