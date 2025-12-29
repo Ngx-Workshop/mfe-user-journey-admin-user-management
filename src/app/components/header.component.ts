@@ -11,7 +11,7 @@ import {
   template: `
     <div class="header">
       <canvas #bgCanvas class="bg-canvas" aria-hidden="true"></canvas>
-      <h1>User Metadata</h1>
+      <h1>User Management</h1>
     </div>
   `,
   styles: [

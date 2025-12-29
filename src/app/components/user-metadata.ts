@@ -5,7 +5,6 @@ import {
   signal,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -29,6 +28,7 @@ import {
 import { UserMetadataService } from '../services/user-metadata-api';
 import { ConfirmDeleteDialog } from './delete-confirm';
 import { HeaderComponent } from './header.component';
+import { UserMetadataFiltersComponent } from './user-metadata-filters';
 import { UserMetadataFormComponent } from './user-metadata-form';
 import { UserMetadataListComponent } from './user-metadata-list';
 
@@ -38,70 +38,68 @@ import { UserMetadataListComponent } from './user-metadata-list';
   imports: [
     MatButtonModule,
     MatIconModule,
-    MatCardModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
     UserMetadataListComponent,
     UserMetadataFormComponent,
     HeaderComponent,
+    UserMetadataFiltersComponent,
   ],
   template: `
     <ngx-menu-management-header></ngx-menu-management-header>
-    <section class="page">
-      <div class="content" [class.content--with-form]="formOpen()">
-        <mat-card class="list-card">
-          @if (!loading()) {
-          <div class="list-wrapper">
-            <ngx-user-metadata-list
-              [data]="items()"
-              [total]="pagination().total"
-              [page]="pagination().page"
-              [pageSize]="pagination().limit"
-              (paginationChange)="handlePaginationChange($event)"
-              (edit)="openEditForm($event)"
-              (remove)="deleteRemote($event)"
-              (updateUserRole)="updateUserRole($event)"
-            ></ngx-user-metadata-list>
+    <div class="shell">
+      <div class="container">
+        <ngx-user-metadata-filters></ngx-user-metadata-filters>
+        <div class="content">
+          <div class="list-card">
+            @if (!loading()) {
+            <div class="list-wrapper">
+              <ngx-user-metadata-list
+                [data]="items()"
+                [total]="pagination().total"
+                [page]="pagination().page"
+                [pageSize]="pagination().limit"
+                (paginationChange)="handlePaginationChange($event)"
+                (edit)="openEditForm($event)"
+                (remove)="deleteRemote($event)"
+                (updateUserRole)="updateUserRole($event)"
+              ></ngx-user-metadata-list>
+            </div>
+            } @else {
+            <div class="loading-state">
+              <mat-progress-spinner
+                mode="indeterminate"
+                diameter="48"
+              ></mat-progress-spinner>
+              <p>Loading user metadata…</p>
+            </div>
+            }
           </div>
-          } @else {
-          <div class="loading-state">
-            <mat-progress-spinner
-              mode="indeterminate"
-              diameter="48"
-            ></mat-progress-spinner>
-            <p>Loading user metadata…</p>
-          </div>
-          }
-        </mat-card>
 
-        @if (formOpen()) {
-        <aside class="form-container">
-          <ngx-user-metadata-form
-            [value]="selectedUser()"
-            [loading]="saving()"
-            (submitForm)="handleSubmit($event)"
-            (cancel)="closeForm()"
-          ></ngx-user-metadata-form>
-        </aside>
-        }
+          @if (formOpen()) {
+          <aside class="form-container">
+            <ngx-user-metadata-form
+              [value]="selectedUser()"
+              [loading]="saving()"
+              (submitForm)="handleSubmit($event)"
+              (cancel)="closeForm()"
+            ></ngx-user-metadata-form>
+          </aside>
+          }
+        </div>
       </div>
-    </section>
+    </div>
   `,
   styles: [
     `
-      .page {
+      .shell {
         display: flex;
-        flex-direction: column;
-        gap: 2rem;
-        padding: 1.5rem;
-      }
-      .content {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
         justify-content: center;
-        align-items: flex-start;
-        gap: 2rem;
+      }
+      .container {
+        padding: 1rem;
+        flex: 0 1 clamp(480px, 70vw, 1400px);
+        max-width: 100%;
       }
 
       .content--with-form {
@@ -110,9 +108,12 @@ import { UserMetadataListComponent } from './user-metadata-list';
       }
 
       .list-card {
-        padding: 1rem;
-        flex: 0 1 clamp(320px, 70vw, 1400px);
-        max-width: 100%;
+        background: var(--mat-sys-surface-container-low);
+        padding: 1.5rem;
+        border-radius: var(
+          --mat-card-elevated-container-shape,
+          var(--mat-sys-corner-medium)
+        );
       }
 
       .content--with-form .list-card {

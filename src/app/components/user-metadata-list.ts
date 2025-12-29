@@ -29,99 +29,101 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
     MatFormFieldModule,
     MatSelectModule,
   ],
-  template: `<section
-    class="list-container"
-    aria-label="User metadata list"
-  >
-    @if (data.length) {
-    <table mat-table [dataSource]="data" class="table">
-      <ng-container matColumnDef="uuid">
-        <th mat-header-cell *matHeaderCellDef>UUID</th>
-        <td mat-cell *matCellDef="let item">{{ item.uuid }}</td>
-      </ng-container>
-      <ng-container matColumnDef="firstName">
-        <th mat-header-cell *matHeaderCellDef>First name</th>
-        <td mat-cell *matCellDef="let item">
-          {{ item.firstName || '—' }}
-        </td>
-      </ng-container>
-      <ng-container matColumnDef="lastName">
-        <th mat-header-cell *matHeaderCellDef>Last name</th>
-        <td mat-cell *matCellDef="let item">
-          {{ item.lastName || '—' }}
-        </td>
-      </ng-container>
-      <ng-container matColumnDef="email">
-        <th mat-header-cell *matHeaderCellDef>Email</th>
-        <td mat-cell *matCellDef="let item">
-          {{ item.email || '—' }}
-        </td>
-      </ng-container>
-      <ng-container matColumnDef="role">
-        <th mat-header-cell *matHeaderCellDef>Role</th>
-        <td mat-cell *matCellDef="let item">
-          <!-- {{ item.role || '—' }} -->
-          <mat-select
-            class="role-select"
-            hideSingleSelectionIndicator
-            formControlName="role"
-            [value]="item.role"
-            (valueChange)="roleChange(item, $event)"
+  template: `
+    <section class="list-container" aria-label="User metadata list">
+      <mat-paginator
+        [length]="total"
+        [pageIndex]="page - 1"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="[5, 10, 20, 50]"
+        (page)="onPageChange($event)"
+        aria-label="Pagination"
+      ></mat-paginator>
+      @if (data.length) {
+      <table mat-table [dataSource]="data" class="table">
+        <ng-container matColumnDef="uuid">
+          <th mat-header-cell *matHeaderCellDef>UUID</th>
+          <td mat-cell *matCellDef="let item">{{ item.uuid }}</td>
+        </ng-container>
+        <ng-container matColumnDef="firstName">
+          <th mat-header-cell *matHeaderCellDef>First name</th>
+          <td mat-cell *matCellDef="let item">
+            {{ item.firstName || '—' }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="lastName">
+          <th mat-header-cell *matHeaderCellDef>Last name</th>
+          <td mat-cell *matCellDef="let item">
+            {{ item.lastName || '—' }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>Email</th>
+          <td mat-cell *matCellDef="let item">
+            {{ item.email || '—' }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="role">
+          <th mat-header-cell *matHeaderCellDef>Role</th>
+          <td mat-cell *matCellDef="let item">
+            <!-- {{ item.role || '—' }} -->
+            <mat-select
+              class="role-select"
+              hideSingleSelectionIndicator
+              formControlName="role"
+              [value]="item.role"
+              (valueChange)="roleChange(item, $event)"
+            >
+              @for (role of roleTypes; track role) {
+              <mat-option [value]="role">{{ role }}</mat-option>
+              }
+            </mat-select>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="actions">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            class="actions-column"
           >
-            @for (role of roleTypes; track role) {
-            <mat-option [value]="role">{{ role }}</mat-option>
-            }
-          </mat-select>
-        </td>
-      </ng-container>
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef class="actions-column">
-          Actions
-        </th>
-        <td mat-cell *matCellDef="let item" class="actions-column">
-          <button
-            mat-icon-button
-            matTooltip="Edit"
-            type="button"
-            (click)="onEdit(item)"
-            [attr.aria-label]="'Edit ' + item.uuid"
-          >
-            <mat-icon>edit</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            matTooltip="Delete"
-            type="button"
-            (click)="onRemove(item)"
-            [attr.aria-label]="'Delete ' + item.uuid"
-          >
-            <mat-icon>delete</mat-icon>
-          </button>
-        </td>
-      </ng-container>
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr
-        mat-row
-        *matRowDef="let row; columns: displayedColumns"
-        class="data-row"
-      ></tr>
-    </table>
-    } @else {
-    <div class="empty-state">
-      <p>No user metadata found.</p>
-      <p class="hint">Use the create button to add a new user.</p>
-    </div>
-    }
-
-    <mat-paginator
-      [length]="total"
-      [pageIndex]="page - 1"
-      [pageSize]="pageSize"
-      [pageSizeOptions]="[5, 10, 20, 50]"
-      (page)="onPageChange($event)"
-      aria-label="Pagination"
-    ></mat-paginator>
-  </section> `,
+            Actions
+          </th>
+          <td mat-cell *matCellDef="let item" class="actions-column">
+            <button
+              mat-icon-button
+              matTooltip="Edit"
+              type="button"
+              (click)="onEdit(item)"
+              [attr.aria-label]="'Edit ' + item.uuid"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              matTooltip="Delete"
+              type="button"
+              (click)="onRemove(item)"
+              [attr.aria-label]="'Delete ' + item.uuid"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: displayedColumns"
+          class="data-row"
+        ></tr>
+      </table>
+      } @else {
+      <div class="empty-state">
+        <p>No user metadata found.</p>
+        <p class="hint">Use the create button to add a new user.</p>
+      </div>
+      }
+    </section>
+  `,
   styles: [
     `
       @use '@angular/material' as mat;
@@ -134,8 +136,17 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
         gap: 1rem;
       }
 
+      mat-paginator {
+        background: var(--mat-sys-surface-container-low);
+      }
+
       .table {
-        width: 100%;
+        padding: 1.5rem;
+        background: var(--mat-sys-surface-container-high);
+        border-radius: var(
+          --mat-card-elevated-container-shape,
+          var(--mat-sys-corner-medium)
+        );
       }
 
       .data-row:hover {
