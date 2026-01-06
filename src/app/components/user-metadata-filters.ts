@@ -2,7 +2,8 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  signal,
+  computed,
+  inject,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -11,6 +12,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
+import {
+  UserMetadataFiltersStore,
+  UserMetadataRoleFilter,
+} from '../services/user-metadata-filters.store';
 
 @Component({
   selector: 'ngx-user-metadata-filters',
@@ -27,7 +32,12 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
     <div class="filters">
       <div class="filter-row header">
         <h3>Filters</h3>
-        <button matButton>
+        <button
+          matButton
+          type="button"
+          (click)="clearAll()"
+          [disabled]="!hasActiveFilters()"
+        >
           <mat-icon>clear_all</mat-icon> Clear All
         </button>
       </div>
@@ -38,9 +48,15 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
             matInput
             [value]="query()"
             placeholder="Filter by name or subject"
+            (input)="onQueryChange($any($event.target).value)"
           />
           @if(query()) {
-          <button mat-icon-button matSuffix>
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="clearQuery()"
+          >
             <mat-icon>close</mat-icon>
           </button>
           }
@@ -48,7 +64,11 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
 
         <mat-form-field appearance="outline" class="subject">
           <mat-label>Roles</mat-label>
-          <mat-select>
+          <mat-select
+            [value]="role()"
+            (valueChange)="onRoleChange($event)"
+          >
+            <mat-option value="all">All roles</mat-option>
             @for (role of roleTypes; track $index) {
             <mat-option [value]="role">{{ role }}</mat-option>
             }
@@ -96,10 +116,33 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserMetadataFiltersComponent {
-  readonly query = signal('');
+  private readonly filtersStore = inject(UserMetadataFiltersStore);
+
+  readonly query = this.filtersStore.query;
+  readonly role = this.filtersStore.role;
+  readonly hasActiveFilters = computed(
+    () => !!this.query().trim() || this.role() !== 'all'
+  );
+
   readonly roleTypes: UserMetadataDto['role'][] = [
     'admin',
     'publisher',
     'regular',
   ];
+
+  onQueryChange(value: string): void {
+    this.filtersStore.setQuery(value);
+  }
+
+  clearQuery(): void {
+    this.filtersStore.setQuery('');
+  }
+
+  onRoleChange(role: UserMetadataRoleFilter): void {
+    this.filtersStore.setRole(role);
+  }
+
+  clearAll(): void {
+    this.filtersStore.clear();
+  }
 }

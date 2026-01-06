@@ -1,8 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -26,6 +28,10 @@ import {
   tap,
 } from 'rxjs';
 import { UserMetadataService } from '../services/user-metadata-api';
+import {
+  UserMetadataFilters,
+  UserMetadataFiltersStore,
+} from '../services/user-metadata-filters.store';
 import { ConfirmDeleteDialog } from './delete-confirm';
 import { HeaderComponent } from './header.component';
 import { UserMetadataFiltersComponent } from './user-metadata-filters';
@@ -183,6 +189,7 @@ export class UserMetadataPageComponent {
   private readonly dialog = inject(MatDialog);
   private readonly service = inject(UserMetadataService);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly filtersStore = inject(UserMetadataFiltersStore);
 
   readonly loading = signal(false);
   readonly saving = signal(false);
@@ -193,31 +200,45 @@ export class UserMetadataPageComponent {
   readonly formOpen = signal(false);
 
   constructor() {
-    this.loadPage();
+    effect(() => {
+      const filters = this.filtersStore.filters();
+      const limit = untracked(() => this.pagination().limit);
+
+      this.pagination.update((state) => ({ ...state, page: 1 }));
+      this.loadPage(1, limit, filters);
+    });
   }
 
   loadPage(
     page = this.pagination().page,
-    limit = this.pagination().limit
+    limit = this.pagination().limit,
+    filters: UserMetadataFilters = this.filtersStore.filters()
   ): void {
     this.loading.set(true);
 
     lastValueFrom(
-      this.service.findAll({ page, limit }).pipe(
-        tap((response) => {
-          this.items.set(response.data);
-          this.pagination.set({
-            page: response.page,
-            limit: response.limit,
-            total: response.total,
-          });
-        }),
-        catchError((error) => {
-          this.handleError('Unable to load user metadata', error);
-          return EMPTY;
-        }),
-        finalize(() => this.loading.set(false))
-      )
+      this.service
+        .findAll({
+          page,
+          limit,
+          query: filters.query || undefined,
+          role: filters.role === 'all' ? undefined : filters.role,
+        })
+        .pipe(
+          tap((response) => {
+            this.items.set(response.data);
+            this.pagination.set({
+              page: response.page,
+              limit: response.limit,
+              total: response.total,
+            });
+          }),
+          catchError((error) => {
+            this.handleError('Unable to load user metadata', error);
+            return EMPTY;
+          }),
+          finalize(() => this.loading.set(false))
+        )
     );
   }
 
@@ -240,7 +261,11 @@ export class UserMetadataPageComponent {
       page: event.page,
       limit: event.limit,
     });
-    this.loadPage(event.page, event.limit);
+    this.loadPage(
+      event.page,
+      event.limit,
+      this.filtersStore.filters()
+    );
   }
 
   handleSubmit(userMetadata: UpdateUserMetadataDto): void {

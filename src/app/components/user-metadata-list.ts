@@ -44,7 +44,6 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
         <ng-container matColumnDef="role">
           <th mat-header-cell *matHeaderCellDef>Role</th>
           <td mat-cell *matCellDef="let item">
-            <!-- {{ item.role || '—' }} -->
             <mat-select
               class="role-select"
               hideSingleSelectionIndicator

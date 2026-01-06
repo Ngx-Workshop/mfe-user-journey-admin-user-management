@@ -17,6 +17,8 @@ export interface PaginatedUserMetadataDto {
 export interface PaginationOptions {
   page?: number;
   limit?: number;
+  query?: string;
+  role?: UserMetadataDto['role'];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -35,6 +37,14 @@ export class UserMetadataService {
 
     if (params.limit != undefined) {
       httpParams = httpParams.set('limit', params.limit.toString());
+    }
+
+    if (params.query) {
+      httpParams = httpParams.set('query', params.query);
+    }
+
+    if (params.role) {
+      httpParams = httpParams.set('role', params.role);
     }
 
     return this.http.get<PaginatedUserMetadataDto>(
