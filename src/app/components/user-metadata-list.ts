@@ -118,7 +118,6 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
       } @else {
       <div class="empty-state">
         <p>No user metadata found.</p>
-        <p class="hint">Use the create button to add a new user.</p>
       </div>
       }
     </section>
@@ -149,17 +148,13 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
       }
 
       .data-row:hover {
-        background-color: rgba(0, 0, 0, 0.04);
+        background-color: var(--mat-sys-secondary-container);
       }
 
       .empty-state {
         text-align: center;
         padding: 2rem 1rem;
-        color: rgba(0, 0, 0, 0.6);
-      }
-
-      .empty-state .hint {
-        font-size: 0.85rem;
+        color: var(--mat-sys-on-surface);
       }
 
       .role-select {

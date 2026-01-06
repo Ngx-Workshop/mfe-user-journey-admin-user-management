@@ -58,8 +58,8 @@ import { UserMetadataListComponent } from './user-metadata-list';
         <ngx-user-metadata-filters></ngx-user-metadata-filters>
         <div class="content">
           <div class="list-card">
-            @if (!loading()) {
             <div class="list-wrapper">
+              @if (!loading()) {
               <ngx-user-metadata-list
                 [data]="items()"
                 [total]="pagination().total"
@@ -70,16 +70,17 @@ import { UserMetadataListComponent } from './user-metadata-list';
                 (remove)="deleteRemote($event)"
                 (updateUserRole)="updateUserRole($event)"
               ></ngx-user-metadata-list>
+
+              } @else {
+              <div class="loading-state">
+                <mat-progress-spinner
+                  mode="indeterminate"
+                  diameter="48"
+                ></mat-progress-spinner>
+                <p>Loading user metadata…</p>
+              </div>
+              }
             </div>
-            } @else {
-            <div class="loading-state">
-              <mat-progress-spinner
-                mode="indeterminate"
-                diameter="48"
-              ></mat-progress-spinner>
-              <p>Loading user metadata…</p>
-            </div>
-            }
           </div>
 
           @if (formOpen()) {
