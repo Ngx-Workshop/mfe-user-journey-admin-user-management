@@ -7,7 +7,7 @@ import {
   untracked,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {
@@ -40,14 +40,12 @@ import { UserMetadataListComponent } from './user-metadata-list';
 
 @Component({
   selector: 'ngx-user-metadata-page',
-  standalone: true,
   imports: [
     MatButtonModule,
     MatIconModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
     UserMetadataListComponent,
-    UserMetadataFormComponent,
     HeaderComponent,
     UserMetadataFiltersComponent,
   ],
@@ -82,17 +80,6 @@ import { UserMetadataListComponent } from './user-metadata-list';
               }
             </div>
           </div>
-
-          @if (formOpen()) {
-          <aside class="form-container">
-            <ngx-user-metadata-form
-              [value]="selectedUser()"
-              [loading]="saving()"
-              (submitForm)="handleSubmit($event)"
-              (cancel)="closeForm()"
-            ></ngx-user-metadata-form>
-          </aside>
-          }
         </div>
       </div>
     </div>
@@ -109,11 +96,6 @@ import { UserMetadataListComponent } from './user-metadata-list';
         max-width: 100%;
       }
 
-      .content--with-form {
-        flex-wrap: nowrap;
-        justify-content: space-between;
-      }
-
       .list-card {
         background: var(--mat-sys-surface-container-low);
         padding: 1.5rem;
@@ -123,23 +105,10 @@ import { UserMetadataListComponent } from './user-metadata-list';
         );
       }
 
-      .content--with-form .list-card {
-        flex: 1 1 0%;
-        max-width: none;
-      }
-
       .list-wrapper {
         min-height: 300px;
         display: flex;
         flex-direction: column;
-      }
-
-      .form-container {
-        position: sticky;
-        top: 1.5rem;
-        align-self: flex-start;
-        flex: 0 0 clamp(320px, 28vw, 420px);
-        animation: form-container-slide-in 300ms ease;
       }
 
       .loading-state {
@@ -151,21 +120,8 @@ import { UserMetadataListComponent } from './user-metadata-list';
         color: rgba(0, 0, 0, 0.6);
       }
 
-      @keyframes form-container-slide-in {
-        from {
-          opacity: 0;
-          transform: translateY(12px);
-        }
-
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
       @media (max-width: 1024px) {
-        .content,
-        .content--with-form {
+        .content {
           flex-direction: column;
           flex-wrap: wrap;
           justify-content: flex-start;
@@ -174,12 +130,6 @@ import { UserMetadataListComponent } from './user-metadata-list';
         .list-card {
           flex: 1 1 100%;
           max-width: none;
-        }
-
-        .form-container {
-          position: static;
-          width: 100%;
-          flex: 1 1 auto;
         }
       }
     `,
@@ -196,10 +146,6 @@ export class UserMetadataPageComponent {
   readonly saving = signal(false);
   readonly items = signal<UserMetadataDto[]>([]);
   readonly pagination = signal({ page: 1, limit: 10, total: 0 });
-  readonly selectedUser = signal<UserMetadataDto | null>(null);
-
-  readonly formOpen = signal(false);
-
   constructor() {
     effect(() => {
       const filters = this.filtersStore.filters();
@@ -244,13 +190,28 @@ export class UserMetadataPageComponent {
   }
 
   openEditForm(user: UserMetadataDto): void {
-    this.selectedUser.set(user);
-    this.formOpen.set(true);
-  }
+    const dialogRef = this.dialog.open(UserMetadataFormComponent, {
+      width: '720px',
+      disableClose: true,
+    });
 
-  closeForm(): void {
-    this.formOpen.set(false);
-    this.selectedUser.set(null);
+    dialogRef.componentInstance.value = user;
+    dialogRef.componentInstance.loading = this.saving();
+
+    const submitSubscription =
+      dialogRef.componentInstance.submitForm.subscribe((payload) =>
+        this.handleSubmit(payload, dialogRef)
+      );
+
+    const cancelSubscription =
+      dialogRef.componentInstance.cancel.subscribe(() =>
+        dialogRef.close()
+      );
+
+    dialogRef.afterClosed().subscribe(() => {
+      submitSubscription.unsubscribe();
+      cancelSubscription.unsubscribe();
+    });
   }
 
   handlePaginationChange(event: {
@@ -269,22 +230,33 @@ export class UserMetadataPageComponent {
     );
   }
 
-  handleSubmit(userMetadata: UpdateUserMetadataDto): void {
+  handleSubmit(
+    userMetadata: UpdateUserMetadataDto,
+    dialogRef?: MatDialogRef<UserMetadataFormComponent>
+  ): void {
     this.saving.set(true);
+    if (dialogRef) {
+      dialogRef.componentInstance.loading = true;
+    }
     lastValueFrom(
       this.service.update(userMetadata).pipe(
         tap(() => {
           this.snackBar.open('User metadata updated', 'Dismiss', {
             duration: 3000,
           });
-          this.closeForm();
+          dialogRef?.close();
           this.loadPage();
         }),
         catchError((error) => {
           this.handleError('Unable to save user metadata', error);
           return EMPTY;
         }),
-        finalize(() => this.saving.set(false))
+        finalize(() => {
+          this.saving.set(false);
+          if (dialogRef?.componentInstance) {
+            dialogRef.componentInstance.loading = false;
+          }
+        })
       )
     );
   }

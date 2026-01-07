@@ -3,9 +3,7 @@ import {
   Component,
   EventEmitter,
   Input,
-  OnChanges,
   Output,
-  SimpleChanges,
   inject,
 } from '@angular/core';
 import {
@@ -158,8 +156,9 @@ import {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class UserMetadataFormComponent implements OnChanges {
+export class UserMetadataFormComponent {
   private readonly fb = inject(FormBuilder);
+  private _value: UserMetadataDto | null = null;
 
   readonly form = this.fb.nonNullable.group({
     uuid: ['', [Validators.required]],
@@ -171,7 +170,18 @@ export class UserMetadataFormComponent implements OnChanges {
   });
 
   @Input()
-  value: UserMetadataDto | null = null;
+  get value(): UserMetadataDto | null {
+    return this._value;
+  }
+
+  set value(value: UserMetadataDto | null) {
+    this._value = value;
+    if (value) {
+      this.setFormValue(value);
+    } else {
+      this.resetForm();
+    }
+  }
 
   @Input()
   loading = false;
@@ -181,19 +191,6 @@ export class UserMetadataFormComponent implements OnChanges {
 
   @Output()
   submitForm = new EventEmitter<UpdateUserMetadataDto>();
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['value'] && this.value) {
-      this.form.reset({
-        uuid: { value: this.value.uuid, disabled: true },
-        firstName: this.value.firstName ?? '',
-        lastName: this.value.lastName ?? '',
-        email: this.value.email ?? '',
-        avatarUrl: this.value.avatarUrl ?? '',
-        description: this.value.description ?? '',
-      });
-    }
-  }
 
   onSubmit(): void {
     if (this.form.invalid) {
@@ -216,6 +213,29 @@ export class UserMetadataFormComponent implements OnChanges {
 
   onCancel(): void {
     this.cancel.emit();
+  }
+
+  private setFormValue(value: UserMetadataDto): void {
+    this.form.reset({
+      uuid: { value: value.uuid, disabled: true },
+      firstName: value.firstName ?? '',
+      lastName: value.lastName ?? '',
+      email: value.email ?? '',
+      avatarUrl: value.avatarUrl ?? '',
+      description: value.description ?? '',
+    });
+  }
+
+  private resetForm(): void {
+    this.form.reset({
+      uuid: '',
+      firstName: '',
+      lastName: '',
+      email: '',
+      avatarUrl: '',
+      description: '',
+    });
+    this.form.controls.uuid.enable();
   }
 
   private trimOrUndefined(
