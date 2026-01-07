@@ -132,6 +132,12 @@ import { UserMetadataListComponent } from './user-metadata-list';
           max-width: none;
         }
       }
+
+      :root {
+        .solid-dialog-backdrop {
+          background: red !important;
+        }
+      }
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -192,7 +198,7 @@ export class UserMetadataPageComponent {
   openEditForm(user: UserMetadataDto): void {
     const dialogRef = this.dialog.open(UserMetadataFormComponent, {
       width: '720px',
-      disableClose: true,
+      backdropClass: 'solid-dialog-backdrop',
     });
 
     dialogRef.componentInstance.value = user;
