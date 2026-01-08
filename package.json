@@ -32,6 +32,7 @@
     "@angular/cli": "20.1.5",
     "@angular/compiler-cli": "20.1.6",
     "@tmdjr/ngx-user-metadata": "^0.0.11",
+    "@tmdjr/service-nestjs-assessment-test-contracts": "0.0.12",
     "@tmdjr/user-metadata-contracts": "0.0.39",
     "@types/jasmine": "~5.1.0",
     "jasmine-core": "~5.7.0",

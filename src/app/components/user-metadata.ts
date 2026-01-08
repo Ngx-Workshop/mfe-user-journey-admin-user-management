@@ -34,8 +34,8 @@ import {
 } from '../services/user-metadata-filters.store';
 import { ConfirmDeleteDialog } from './delete-confirm';
 import { HeaderComponent } from './header.component';
+import { UserMetadataDialog } from './user-metadata-dialog';
 import { UserMetadataFiltersComponent } from './user-metadata-filters';
-import { UserMetadataFormComponent } from './user-metadata-form';
 import { UserMetadataListComponent } from './user-metadata-list';
 
 @Component({
@@ -132,12 +132,6 @@ import { UserMetadataListComponent } from './user-metadata-list';
           max-width: none;
         }
       }
-
-      :root {
-        .solid-dialog-backdrop {
-          background: red !important;
-        }
-      }
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -196,12 +190,12 @@ export class UserMetadataPageComponent {
   }
 
   openEditForm(user: UserMetadataDto): void {
-    const dialogRef = this.dialog.open(UserMetadataFormComponent, {
+    const dialogRef = this.dialog.open(UserMetadataDialog, {
       width: '720px',
-      backdropClass: 'solid-dialog-backdrop',
+      panelClass: 'fullscreen-dialog',
     });
 
-    dialogRef.componentInstance.value = user;
+    dialogRef.componentRef?.setInput('value', user);
     dialogRef.componentInstance.loading = this.saving();
 
     const submitSubscription =
@@ -238,7 +232,7 @@ export class UserMetadataPageComponent {
 
   handleSubmit(
     userMetadata: UpdateUserMetadataDto,
-    dialogRef?: MatDialogRef<UserMetadataFormComponent>
+    dialogRef?: MatDialogRef<UserMetadataDialog>
   ): void {
     this.saving.set(true);
     if (dialogRef) {
