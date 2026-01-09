@@ -21,7 +21,7 @@ import { TestInfoViewModel } from '../../services/assessment-tests-api.service';
     RouterLink,
   ],
   template: `
-    @if (marshallTestInfoViewModel(); as vm) {
+    @if (testInfo(); as vm) {
     <mat-accordion>
       @for (subject of vm.subjectLevels; track $index) {
       <mat-expansion-panel
@@ -32,10 +32,7 @@ import { TestInfoViewModel } from '../../services/assessment-tests-api.service';
       >
         <mat-expansion-panel-header>
           <mat-panel-title>
-            <mat-icon
-              class="subject-icon"
-              [svgIcon]="subject.subjectIcon"
-            ></mat-icon>
+            <i [class]="subject.subjectIcon"></i>
             {{ subject.subjectTitle }}
           </mat-panel-title>
           <mat-panel-description>
@@ -83,6 +80,10 @@ import { TestInfoViewModel } from '../../services/assessment-tests-api.service';
   styles: [
     `
       :host {
+        i {
+          font-size: 1.5rem;
+          inline-size: 2rem;
+        }
         .info-container {
           margin-bottom: 36px;
         }
@@ -120,5 +121,5 @@ import { TestInfoViewModel } from '../../services/assessment-tests-api.service';
 })
 export class AssessmentTestList {
   openPanelDelay = timer(800).pipe(map(() => true));
-  marshallTestInfoViewModel = input.required<TestInfoViewModel>();
+  testInfo = input.required<TestInfoViewModel>();
 }

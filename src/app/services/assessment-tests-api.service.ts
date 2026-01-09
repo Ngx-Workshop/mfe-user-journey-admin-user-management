@@ -8,9 +8,9 @@ import { Observable } from 'rxjs';
 
 const subjects = ['ANGULAR', 'RXJS', 'NESTJS'];
 const iconMap = new Map<string, string>([
-  ['ANGULAR', 'angular_white_logomark'],
-  ['RXJS', 'rxjs_white_logomark'],
-  ['NESTJS', 'nestjs_white_logomark'],
+  ['ANGULAR', 'devicon-angular-plain'],
+  ['RXJS', 'devicon-rxjs-plain'],
+  ['NESTJS', 'devicon-nestjs-original'],
 ]);
 
 export type TestInfo = {

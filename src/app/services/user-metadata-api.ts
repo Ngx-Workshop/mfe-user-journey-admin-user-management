@@ -57,7 +57,10 @@ export class UserMetadataService {
 
   findOne(uuid: string): Observable<UserMetadataDto> {
     const params = new HttpParams().set('uuid', uuid);
-    return this.http.get<UserMetadataDto>(this.baseUrl, { params });
+    return this.http.get<UserMetadataDto>(
+      `${this.baseUrl}/${uuid}/find-one`,
+      { params }
+    );
   }
 
   update({
