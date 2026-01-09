@@ -1,52 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDivider } from '@angular/material/divider';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { RouterLink } from '@angular/router';
-import {
-  UserAssessmentTestDto,
-  UserSubjectEligibilityDto,
-} from '@tmdjr/service-nestjs-assessment-test-contracts';
-import {
-  BehaviorSubject,
-  combineLatest,
-  filter,
-  map,
-  switchMap,
-  timer,
-} from 'rxjs';
-import { AssessmentTestsApiService } from '../services/assessment-tests-api.service';
-
-type TestInfo = {
-  assessmentTests: UserAssessmentTestDto[];
-  subjectLevels: UserSubjectEligibilityDto[];
-};
-
-interface TestInfoViewModel {
-  subjectLevels: {
-    subjectTitle: string;
-    subjectIcon: string;
-    levelCount: number;
-    completedTests?: {
-      testName: string;
-      score: number;
-      questionsLength: number;
-      scorePercent: number;
-    }[];
-    incompleteTests?: {
-      testName: string;
-    }[];
-  }[];
-}
-
-const iconMap = new Map<string, string>([
-  ['ANGULAR', 'angular_white_logomark'],
-  ['RXJS', 'rxjs_white_logomark'],
-  ['NESTJS', 'nestjs_white_logomark'],
-]);
+import { map, timer } from 'rxjs';
+import { TestInfoViewModel } from '../../services/assessment-tests-api.service';
 
 @Component({
   selector: 'ngx-assessment-test-list',
@@ -60,9 +21,7 @@ const iconMap = new Map<string, string>([
     RouterLink,
   ],
   template: `
-    @if (viewModel$ | async; as vm) {
-
-    <h2>Assessment Tests</h2>
+    @if (marshallTestInfoViewModel(); as vm) {
     <mat-accordion>
       @for (subject of vm.subjectLevels; track $index) {
       <mat-expansion-panel
@@ -84,8 +43,7 @@ const iconMap = new Map<string, string>([
           </mat-panel-description>
         </mat-expansion-panel-header>
         <!-- <p>{{ subject | json }}</p> -->
-
-        @if (subject.incompleteTests.length) {
+        @if (subject.incompleteTests?.length) {
         <div class="info-container">
           <h2>Incomplete Test:</h2>
           <mat-divider></mat-divider>
@@ -98,7 +56,7 @@ const iconMap = new Map<string, string>([
           </div>
           }
         </div>
-        } @if (subject.completedTests.length) {
+        } @if (subject.completedTests?.length) {
         <div class="info-container">
           <h2>Completed Tests:</h2>
           <mat-divider></mat-divider>
@@ -162,64 +120,5 @@ const iconMap = new Map<string, string>([
 })
 export class AssessmentTestList {
   openPanelDelay = timer(800).pipe(map(() => true));
-
-  private readonly assessmentTestsApiService = inject(
-    AssessmentTestsApiService
-  );
-
-  _userId = new BehaviorSubject<string | null>(null);
-  @Input()
-  set userId(value: string) {
-    this._userId.next(value);
-  }
-
-  viewModel$ = this._userId.asObservable().pipe(
-    filter((userId): userId is string => userId !== null),
-    switchMap((userId) =>
-      combineLatest({
-        assessmentTests:
-          this.assessmentTestsApiService.fetchUsersAssessments$(
-            userId
-          ),
-        subjectLevels:
-          this.assessmentTestsApiService.fetchUserSubjectEligibilities$(
-            userId
-          ),
-      })
-    ),
-    map((data) => this.testInfoViewModel(data))
-  );
-
-  testInfoViewModel(data: TestInfo) {
-    const subjectLevels = data.subjectLevels.map((subjectLevel) => {
-      const testsForSubject = data.assessmentTests.filter(
-        (test) => test.subject === subjectLevel.subject
-      );
-
-      const incompleteTests = testsForSubject.filter(
-        (test) => !test.completed
-      );
-      const completedTests = testsForSubject
-        .filter((test) => test.completed)
-        .map((test) => {
-          return {
-            testName: test.testName,
-            score: test.score,
-            questionsLength: test.userAnswers.length,
-            scorePercent:
-              (test.score / test.userAnswers.length) * 100,
-          };
-        });
-
-      return {
-        subjectTitle: subjectLevel.subject,
-        subjectIcon: iconMap.get(subjectLevel.subject) ?? '',
-        levelCount: subjectLevel.levelCount,
-        incompleteTests,
-        completedTests,
-      };
-    });
-
-    return { subjectLevels };
-  }
+  marshallTestInfoViewModel = input.required<TestInfoViewModel>();
 }

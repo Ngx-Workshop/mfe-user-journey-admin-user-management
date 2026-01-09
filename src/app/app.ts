@@ -2,10 +2,7 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'ngx-seed-mfe',
-  standalone: true,
-  imports: [],
   template: ``,
-  styles: [``],
 })
 export class App {}
 

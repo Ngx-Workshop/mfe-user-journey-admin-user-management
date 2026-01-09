@@ -7,17 +7,15 @@ import {
   untracked,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {
   MatSnackBar,
   MatSnackBarModule,
 } from '@angular/material/snack-bar';
-import {
-  UpdateUserMetadataDto,
-  UserMetadataDto,
-} from '@tmdjr/user-metadata-contracts';
+import { ActivatedRoute, Router } from '@angular/router';
+import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
 import {
   EMPTY,
   catchError,
@@ -34,9 +32,8 @@ import {
 } from '../services/user-metadata-filters.store';
 import { ConfirmDeleteDialog } from './delete-confirm';
 import { HeaderComponent } from './header.component';
-import { UserMetadataDialog } from './user-metadata-dialog';
-import { UserMetadataFiltersComponent } from './user-metadata-filters';
-import { UserMetadataListComponent } from './user-metadata-list';
+import { UserMetadataFiltersComponent } from './user-metadata-list/user-metadata-filters';
+import { UserMetadataListComponent } from './user-metadata-list/user-metadata-list';
 
 @Component({
   selector: 'ngx-user-metadata-page',
@@ -59,12 +56,12 @@ import { UserMetadataListComponent } from './user-metadata-list';
             <div class="list-wrapper">
               @if (!loading()) {
               <ngx-user-metadata-list
-                [data]="items()"
+                [userMetadata]="paginatedUserMetadata()"
                 [total]="pagination().total"
                 [page]="pagination().page"
                 [pageSize]="pagination().limit"
                 (paginationChange)="handlePaginationChange($event)"
-                (edit)="openEditForm($event)"
+                (edit)="navigateToUserDetails($event)"
                 (remove)="deleteRemote($event)"
                 (updateUserRole)="updateUserRole($event)"
               ></ngx-user-metadata-list>
@@ -137,14 +134,16 @@ import { UserMetadataListComponent } from './user-metadata-list';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserMetadataPageComponent {
+  protected readonly router = inject(Router);
+  protected readonly route = inject(ActivatedRoute);
   private readonly dialog = inject(MatDialog);
-  private readonly service = inject(UserMetadataService);
+  private readonly userMetadataService = inject(UserMetadataService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly filtersStore = inject(UserMetadataFiltersStore);
 
   readonly loading = signal(false);
   readonly saving = signal(false);
-  readonly items = signal<UserMetadataDto[]>([]);
+  readonly paginatedUserMetadata = signal<UserMetadataDto[]>([]);
   readonly pagination = signal({ page: 1, limit: 10, total: 0 });
   constructor() {
     effect(() => {
@@ -164,7 +163,7 @@ export class UserMetadataPageComponent {
     this.loading.set(true);
 
     lastValueFrom(
-      this.service
+      this.userMetadataService
         .findAll({
           page,
           limit,
@@ -173,7 +172,7 @@ export class UserMetadataPageComponent {
         })
         .pipe(
           tap((response) => {
-            this.items.set(response.data);
+            this.paginatedUserMetadata.set(response.data);
             this.pagination.set({
               page: response.page,
               limit: response.limit,
@@ -187,31 +186,6 @@ export class UserMetadataPageComponent {
           finalize(() => this.loading.set(false))
         )
     );
-  }
-
-  openEditForm(user: UserMetadataDto): void {
-    const dialogRef = this.dialog.open(UserMetadataDialog, {
-      width: '720px',
-      panelClass: 'fullscreen-dialog',
-    });
-
-    dialogRef.componentRef?.setInput('value', user);
-    dialogRef.componentInstance.loading = this.saving();
-
-    const submitSubscription =
-      dialogRef.componentInstance.submitForm.subscribe((payload) =>
-        this.handleSubmit(payload, dialogRef)
-      );
-
-    const cancelSubscription =
-      dialogRef.componentInstance.cancel.subscribe(() =>
-        dialogRef.close()
-      );
-
-    dialogRef.afterClosed().subscribe(() => {
-      submitSubscription.unsubscribe();
-      cancelSubscription.unsubscribe();
-    });
   }
 
   handlePaginationChange(event: {
@@ -230,39 +204,8 @@ export class UserMetadataPageComponent {
     );
   }
 
-  handleSubmit(
-    userMetadata: UpdateUserMetadataDto,
-    dialogRef?: MatDialogRef<UserMetadataDialog>
-  ): void {
-    this.saving.set(true);
-    if (dialogRef) {
-      dialogRef.componentInstance.loading = true;
-    }
-    lastValueFrom(
-      this.service.update(userMetadata).pipe(
-        tap(() => {
-          this.snackBar.open('User metadata updated', 'Dismiss', {
-            duration: 3000,
-          });
-          dialogRef?.close();
-          this.loadPage();
-        }),
-        catchError((error) => {
-          this.handleError('Unable to save user metadata', error);
-          return EMPTY;
-        }),
-        finalize(() => {
-          this.saving.set(false);
-          if (dialogRef?.componentInstance) {
-            dialogRef.componentInstance.loading = false;
-          }
-        })
-      )
-    );
-  }
-
   handleDelete(uuid: string) {
-    return this.service.remove(uuid).pipe(
+    return this.userMetadataService.remove(uuid).pipe(
       tap(() => {
         this.snackBar.open('User metadata deleted', 'Dismiss', {
           duration: 3000,
@@ -295,20 +238,29 @@ export class UserMetadataPageComponent {
   updateUserRole(user: UserMetadataDto) {
     this.saving.set(true);
     lastValueFrom(
-      this.service.updateUserRole(user.uuid, user.role).pipe(
-        tap(() => {
-          this.snackBar.open('User role updated', 'Dismiss', {
-            duration: 3000,
-          });
-          this.loadPage();
-        }),
-        catchError((error) => {
-          this.handleError('Unable to update user role', error);
-          return EMPTY;
-        }),
-        finalize(() => this.saving.set(false))
-      )
+      this.userMetadataService
+        .updateUserRole(user.uuid, user.role)
+        .pipe(
+          tap(() => {
+            this.snackBar.open('User role updated', 'Dismiss', {
+              duration: 3000,
+            });
+            this.loadPage();
+          }),
+          catchError((error) => {
+            this.handleError('Unable to update user role', error);
+            return EMPTY;
+          }),
+          finalize(() => this.saving.set(false))
+        )
     );
+  }
+
+  navigateToUserDetails(userMetadata: UserMetadataDto): void {
+    this.router.navigate(['../user-metadata', userMetadata.uuid], {
+      relativeTo: this.route,
+      state: { userMetadata },
+    });
   }
 
   private handleError(message: string, error: unknown): void {

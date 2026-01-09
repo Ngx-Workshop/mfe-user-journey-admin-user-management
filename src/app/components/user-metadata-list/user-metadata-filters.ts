@@ -15,7 +15,7 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
 import {
   UserMetadataFiltersStore,
   UserMetadataRoleFilter,
-} from '../services/user-metadata-filters.store';
+} from '../../services/user-metadata-filters.store';
 
 @Component({
   selector: 'ngx-user-metadata-filters',

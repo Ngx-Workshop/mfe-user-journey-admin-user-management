@@ -19,7 +19,6 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
 
 @Component({
   selector: 'ngx-user-metadata-list',
-  standalone: true,
   imports: [
     MatTableModule,
     MatPaginatorModule,
@@ -39,8 +38,8 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
         (page)="onPageChange($event)"
         aria-label="Pagination"
       ></mat-paginator>
-      @if (data.length) {
-      <table mat-table [dataSource]="data" class="table">
+      @if (userMetadata.length) {
+      <table mat-table [dataSource]="userMetadata" class="table">
         <ng-container matColumnDef="role">
           <th mat-header-cell *matHeaderCellDef>Role</th>
           <td mat-cell *matCellDef="let item">
@@ -167,7 +166,7 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
 })
 export class UserMetadataListComponent {
   @Input({ required: true })
-  data: UserMetadataDto[] = [];
+  userMetadata: UserMetadataDto[] = [];
 
   @Input()
   total = 0;
