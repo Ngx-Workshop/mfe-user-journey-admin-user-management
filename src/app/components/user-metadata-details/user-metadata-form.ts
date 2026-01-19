@@ -168,7 +168,6 @@ export class UserMetadataFormComponent {
 
     const rawValue = this.form.getRawValue();
     const payload: UpdateUserMetadataDto = {
-      uuid: this.trimOrUndefined(rawValue.uuid),
       firstName: this.trimOrUndefined(rawValue.firstName),
       lastName: this.trimOrUndefined(rawValue.lastName),
       email: this.trimOrUndefined(rawValue.email),
