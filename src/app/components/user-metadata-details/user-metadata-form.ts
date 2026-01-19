@@ -175,13 +175,16 @@ export class UserMetadataFormComponent {
       description: this.trimOrUndefined(rawValue.description),
     };
 
-    this.handleSubmit(payload);
+    this.handleSubmit(rawValue.uuid, payload);
   }
 
-  handleSubmit(userMetadata: UpdateUserMetadataDto): void {
+  handleSubmit(
+    uuid: string,
+    userMetadata: UpdateUserMetadataDto
+  ): void {
     this.loading = true;
     lastValueFrom(
-      this.userMetadataService.update(userMetadata).pipe(
+      this.userMetadataService.update(uuid, userMetadata).pipe(
         tap(() =>
           this.snackBar.open('User metadata updated', 'Dismiss', {
             duration: 3000,
