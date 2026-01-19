@@ -15,6 +15,7 @@ import {
   MatSnackBarModule,
 } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
+import { NgxParticleHeader } from '@tmdjr/ngx-shared-headers';
 import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
 import {
   EMPTY,
@@ -31,7 +32,6 @@ import {
   UserMetadataFiltersStore,
 } from '../services/user-metadata-filters.store';
 import { ConfirmDeleteDialog } from './delete-confirm';
-import { HeaderComponent } from './header.component';
 import { UserMetadataFiltersComponent } from './user-metadata-list/user-metadata-filters';
 import { UserMetadataListComponent } from './user-metadata-list/user-metadata-list';
 
@@ -43,11 +43,13 @@ import { UserMetadataListComponent } from './user-metadata-list/user-metadata-li
     MatSnackBarModule,
     MatProgressSpinnerModule,
     UserMetadataListComponent,
-    HeaderComponent,
     UserMetadataFiltersComponent,
+    NgxParticleHeader,
   ],
   template: `
-    <ngx-menu-management-header></ngx-menu-management-header>
+    <ngx-particle-header>
+      <h1>User Management</h1>
+    </ngx-particle-header>
     <div class="shell">
       <div class="container">
         <ngx-user-metadata-filters></ngx-user-metadata-filters>
@@ -83,6 +85,12 @@ import { UserMetadataListComponent } from './user-metadata-list/user-metadata-li
   `,
   styles: [
     `
+      ngx-particle-header h1 {
+        font-size: 1.85rem;
+        font-weight: 100;
+        margin: 1.7rem 1rem;
+      }
+
       .shell {
         display: flex;
         justify-content: center;
