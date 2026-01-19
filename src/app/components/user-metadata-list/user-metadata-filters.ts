@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import {
   ChangeDetectionStrategy,
   Component,
@@ -20,14 +20,13 @@ import {
 @Component({
   selector: 'ngx-user-metadata-filters',
   imports: [
-    CommonModule,
     MatButtonModule,
     MatButtonToggleModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
-    MatSelectModule,
-  ],
+    MatSelectModule
+],
   template: `
     <div class="filters">
       <div class="filter-row header">

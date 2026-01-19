@@ -85,7 +85,7 @@ export class UserMetadataDetails {
   urlPrams = this.route.snapshot.paramMap;
 
   userMetadata =
-    this.router.getCurrentNavigation()!.extras.state?.[
+    this.router.currentNavigation()!.extras.state?.[
       'userMetadata'
     ];
 
