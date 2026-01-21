@@ -30,14 +30,18 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
   ],
   template: `
     <section class="list-container" aria-label="User metadata list">
-      <mat-paginator
-        [length]="total"
-        [pageIndex]="page - 1"
-        [pageSize]="pageSize"
-        [pageSizeOptions]="[5, 10, 20, 50]"
-        (page)="onPageChange($event)"
-        aria-label="Pagination"
-      ></mat-paginator>
+      <div class="header">
+        <h2>User Metadata</h2>
+        <div class="flex-spacer"></div>
+        <mat-paginator
+          [length]="total"
+          [pageIndex]="page - 1"
+          [pageSize]="pageSize"
+          [pageSizeOptions]="[5, 10, 20, 50]"
+          (page)="onPageChange($event)"
+          aria-label="Pagination"
+        ></mat-paginator>
+      </div>
       @if (userMetadata.length) {
       <table mat-table [dataSource]="userMetadata" class="table">
         <ng-container matColumnDef="role">
@@ -126,6 +130,10 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
       @use '@angular/material' as mat;
       :host {
         width: 100%;
+
+        .header {
+          display: flex;
+        }
       }
       .list-container {
         display: flex;

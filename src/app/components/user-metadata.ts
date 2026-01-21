@@ -50,6 +50,16 @@ import { UserMetadataListComponent } from './user-metadata-list/user-metadata-li
     <ngx-particle-header>
       <h1>User Management</h1>
     </ngx-particle-header>
+    <div class="action-bar">
+      <a routerLink="../../" matButton="filled">
+        <mat-icon>arrow_back</mat-icon> Back to Sections</a
+      >
+      <div class="flex-spacer"></div>
+      <button matButton="filled">
+        <mat-icon>note_add</mat-icon>
+        Create New User
+      </button>
+    </div>
     <div class="shell">
       <div class="container">
         <ngx-user-metadata-filters></ngx-user-metadata-filters>
@@ -135,6 +145,25 @@ import { UserMetadataListComponent } from './user-metadata-list/user-metadata-li
         .list-card {
           flex: 1 1 100%;
           max-width: none;
+        }
+      }
+
+      .action-bar {
+        position: sticky;
+        top: 56px;
+        height: 56px;
+        z-index: 5;
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        background: var(--mat-sys-primary);
+        align-items: center;
+        a,
+        button,
+        mat-paginator {
+          color: var(--mat-sys-on-primary);
+          background: var(--mat-sys-primary);
+          margin: 0 12px;
         }
       }
     `,
