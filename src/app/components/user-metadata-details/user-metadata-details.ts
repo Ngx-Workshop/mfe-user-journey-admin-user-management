@@ -4,7 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, Router } from '@angular/router';
-import { iif, map, of } from 'rxjs';
+import { map } from 'rxjs';
 import { TestInfoViewModel } from '../../services/assessment-tests-api.service';
 import { UserMetadataService } from '../../services/user-metadata-api';
 import { AssessmentTestList } from './assessment-test-list';
@@ -31,7 +31,7 @@ import { UserMetadataFormComponent } from './user-metadata-form';
         <mat-icon>arrow_back</mat-icon>
         Back to User Metadata List
       </button>
-      @if (userMetadataViewModel$ | async; as userMetadata) {
+      @if (userMetadata$ | async; as userMetadata) {
       <div class="list-card">
         <h2>Edit user metadata</h2>
         <ngx-user-metadata-form
@@ -82,21 +82,8 @@ export class UserMetadataDetails {
     UserMetadataService
   );
 
-  urlPrams = this.route.snapshot.paramMap;
-
-  userMetadata =
-    this.router.currentNavigation()!.extras.state?.[
-      'userMetadata'
-    ];
-
   userMetadata$ = this.userMetadataService.findOne(
-    this.urlPrams.get('userId')!
-  );
-
-  userMetadataViewModel$ = iif(
-    () => !!this.userMetadata,
-    of(this.userMetadata),
-    this.userMetadata$
+    this.route.snapshot.paramMap.get('userId')!
   );
 
   testInfoViewModel$ = this.route.data.pipe(
