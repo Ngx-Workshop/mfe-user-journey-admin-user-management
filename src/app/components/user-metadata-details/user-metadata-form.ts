@@ -1,15 +1,17 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  inject,
+  DestroyRef,
   Input,
+  OnInit,
+  inject,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormBuilder,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { MatButton } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -20,10 +22,14 @@ import {
   UserMetadataDto,
 } from '@tmdjr/user-metadata-contracts';
 import {
-  catchError,
   EMPTY,
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
   finalize,
-  lastValueFrom,
+  map,
+  switchMap,
   tap,
 } from 'rxjs';
 import { UserMetadataService } from '../../services/user-metadata-api';
@@ -36,7 +42,6 @@ import { UserMetadataService } from '../../services/user-metadata-api';
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule,
-    MatButton,
   ],
   template: `
     <form class="metadata-form" [formGroup]="form">
@@ -60,7 +65,7 @@ import { UserMetadataService } from '../../services/user-metadata-api';
           <mat-label>Email</mat-label>
           <input matInput formControlName="email" type="email" />
           @if (form.controls.email.hasError('email')) {
-          <mat-error> Please enter a valid email address </mat-error>
+          <mat-error>Please enter a valid email address</mat-error>
           }
         </mat-form-field>
 
@@ -81,23 +86,13 @@ import { UserMetadataService } from '../../services/user-metadata-api';
           ></textarea>
         </mat-form-field>
       </div>
-      <div class="actions">
-        <button
-          matButton="outlined"
-          color="primary"
-          type="submit"
-          [disabled]="loading"
-        >
-          @if (loading) {
-          <mat-progress-spinner
-            mode="indeterminate"
-            diameter="20"
-          ></mat-progress-spinner>
-          } @if (!loading) {
-          <span>Save changes</span>
-          }
-        </button>
-      </div>
+
+      @if (loading) {
+      <mat-progress-spinner
+        mode="indeterminate"
+        diameter="20"
+      ></mat-progress-spinner>
+      }
     </form>
   `,
   styles: [
@@ -134,10 +129,12 @@ import { UserMetadataService } from '../../services/user-metadata-api';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class UserMetadataFormComponent {
+export class UserMetadataFormComponent implements OnInit {
   private readonly userMetadataService = inject(UserMetadataService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly fb = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
+
   private _value: UserMetadataDto | null = null;
   loading = false;
 
@@ -160,66 +157,80 @@ export class UserMetadataFormComponent {
     value ? this.setFormValue(value) : this.resetForm();
   }
 
-  onChanges(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    const rawValue = this.form.getRawValue();
-    const payload: UpdateUserMetadataDto = {
-      firstName: this.trimOrUndefined(rawValue.firstName),
-      lastName: this.trimOrUndefined(rawValue.lastName),
-      email: this.trimOrUndefined(rawValue.email),
-      avatarUrl: this.trimOrUndefined(rawValue.avatarUrl),
-      description: this.trimOrUndefined(rawValue.description),
-    };
-
-    this.handleSubmit(rawValue.uuid, payload);
+  ngOnInit(): void {
+    this.form.valueChanges
+      .pipe(
+        debounceTime(500),
+        filter(() => this.form.valid),
+        map(() => {
+          const raw = this.form.getRawValue();
+          return {
+            uuid: raw.uuid,
+            payload: this.toPayload(raw),
+          };
+        }),
+        distinctUntilChanged(
+          (a, b) =>
+            a.uuid === b.uuid &&
+            JSON.stringify(a.payload) === JSON.stringify(b.payload)
+        ),
+        tap(() => (this.loading = true)),
+        switchMap(({ uuid, payload }) =>
+          this.userMetadataService.update(uuid, payload).pipe(
+            catchError((error) => {
+              this.snackBar.open(String(error), 'Dismiss', {
+                duration: 4000,
+              });
+              return EMPTY;
+            }),
+            finalize(() => (this.loading = false))
+          )
+        ),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe();
   }
 
-  handleSubmit(
-    uuid: string,
-    userMetadata: UpdateUserMetadataDto
-  ): void {
-    this.loading = true;
-    lastValueFrom(
-      this.userMetadataService.update(uuid, userMetadata).pipe(
-        tap(() =>
-          this.snackBar.open('User metadata updated', 'Dismiss', {
-            duration: 3000,
-          })
-        ),
-        catchError((error) => {
-          this.snackBar.open(error, 'Dismiss', { duration: 4000 });
-          return EMPTY;
-        }),
-        finalize(() => (this.loading = false))
-      )
-    );
+  private toPayload(
+    raw: ReturnType<typeof this.form.getRawValue>
+  ): UpdateUserMetadataDto {
+    return {
+      firstName: this.trimOrUndefined(raw.firstName),
+      lastName: this.trimOrUndefined(raw.lastName),
+      email: this.trimOrUndefined(raw.email),
+      avatarUrl: this.trimOrUndefined(raw.avatarUrl),
+      description: this.trimOrUndefined(raw.description),
+    };
   }
 
   private setFormValue(value: UserMetadataDto): void {
-    this.form.reset({
-      uuid: { value: value.uuid, disabled: true },
-      firstName: value.firstName ?? '',
-      lastName: value.lastName ?? '',
-      email: value.email ?? '',
-      avatarUrl: value.avatarUrl ?? '',
-      description: value.description ?? '',
-    });
+    console.log('Setting form value', value);
+    this.form.reset(
+      {
+        uuid: { value: value.uuid, disabled: true },
+        firstName: value.firstName ?? '',
+        lastName: value.lastName ?? '',
+        email: value.email ?? '',
+        avatarUrl: value.avatarUrl ?? '',
+        description: value.description ?? '',
+      },
+      { emitEvent: false }
+    );
   }
 
   private resetForm(): void {
-    this.form.reset({
-      uuid: '',
-      firstName: '',
-      lastName: '',
-      email: '',
-      avatarUrl: '',
-      description: '',
-    });
-    this.form.controls.uuid.enable();
+    this.form.reset(
+      {
+        uuid: '',
+        firstName: '',
+        lastName: '',
+        email: '',
+        avatarUrl: '',
+        description: '',
+      },
+      { emitEvent: false }
+    );
+    this.form.controls.uuid.enable({ emitEvent: false });
   }
 
   private trimOrUndefined(
