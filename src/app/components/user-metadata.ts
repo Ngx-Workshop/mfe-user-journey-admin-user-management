@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   effect,
   inject,
   signal,
@@ -15,7 +14,7 @@ import {
   MatSnackBar,
   MatSnackBarModule,
 } from '@angular/material/snack-bar';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NgxParticleHeader } from '@tmdjr/ngx-shared-headers';
 import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
 import {
@@ -46,17 +45,12 @@ import { UserMetadataListComponent } from './user-metadata-list/user-metadata-li
     UserMetadataListComponent,
     UserMetadataFiltersComponent,
     NgxParticleHeader,
-    RouterLink,
   ],
   template: `
     <ngx-particle-header>
       <h1>User Management</h1>
     </ngx-particle-header>
     <div class="action-bar">
-      <a matButton="filled" [routerLink]="lastRouteURL()">
-        <mat-icon>arrow_back</mat-icon> Back to
-        {{ lastRouteName() }}</a
-      >
       <div class="flex-spacer"></div>
       <button matButton="filled">
         <mat-icon>note_add</mat-icon>
@@ -193,24 +187,6 @@ export class UserMetadataPageComponent {
       this.loadPage(1, limit, filters);
     });
   }
-
-  protected readonly lastRouteURL = computed(
-    () =>
-      this.router
-        .lastSuccessfulNavigation()
-        ?.previousNavigation?.extractedUrl.toString() ??
-      '/admin-dashboard'
-  );
-
-  protected readonly lastRouteName = computed(
-    () =>
-      this.router
-        .lastSuccessfulNavigation()
-        ?.previousNavigation?.extractedUrl.toString()
-        .split('/')[1]
-        .replace(/-/g, ' ')
-        .replace(/\b\w/g, (c) => c.toUpperCase()) || 'Admin Dashboard'
-  );
 
   loadPage(
     page = this.pagination().page,
