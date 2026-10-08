@@ -36,23 +36,23 @@ import { DetailsViewModel } from './details.view-model';
       >
         <h2>Edit user metadata</h2>
         @if (vm.profile().loading) {
-        <p role="status">Loading user…</p>
+          <p role="status">Loading user…</p>
         } @else if (vm.profile().error; as error) {
-        <p role="alert">{{ error }}</p>
-        <button matButton (click)="vm.retryProfile()">
-          Retry user
-        </button>
+          <p role="alert">{{ error }}</p>
+          <button matButton (click)="vm.retryProfile()">
+            Retry user
+          </button>
         } @else if (vm.profile().data; as user) {
-        <ngx-user-metadata-form
-          [userMetadata]="user"
-          [saving]="
-            vm.write().uuid === vm.uuid() && vm.write().pending > 0
-          "
-          [error]="
-            vm.write().uuid === vm.uuid() ? vm.write().error : null
-          "
-          (save)="vm.save($event)"
-        />
+          <ngx-user-metadata-form
+            [userMetadata]="user"
+            [saving]="
+              vm.write().uuid === vm.uuid() && vm.write().pending > 0
+            "
+            [error]="
+              vm.write().uuid === vm.uuid() ? vm.write().error : null
+            "
+            (save)="vm.save($event)"
+          />
         }
       </section>
       <section
@@ -61,14 +61,14 @@ import { DetailsViewModel } from './details.view-model';
       >
         <h2>Assessment Tests</h2>
         @if (vm.assessments().loading) {
-        <p role="status">Loading assessments…</p>
+          <p role="status">Loading assessments…</p>
         } @else if (vm.assessments().error; as error) {
-        <p role="alert">{{ error }}</p>
-        <button matButton (click)="vm.retryAssessments()">
-          Retry assessments
-        </button>
+          <p role="alert">{{ error }}</p>
+          <button matButton (click)="vm.retryAssessments()">
+            Retry assessments
+          </button>
         } @else if (vm.assessments().data; as assessments) {
-        <ngx-assessment-test-list [testInfo]="assessments" />
+          <ngx-assessment-test-list [testInfo]="assessments" />
         }
       </section>
     </main>

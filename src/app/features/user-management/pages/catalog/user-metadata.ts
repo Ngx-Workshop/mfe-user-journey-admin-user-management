@@ -46,29 +46,29 @@ import { CatalogViewModel } from './catalog.view-model';
         [attr.aria-busy]="vm.catalog().loading"
       >
         @if (vm.catalog().loading) {
-        <div class="user-catalog__loading" role="status">
-          <mat-progress-spinner
-            mode="indeterminate"
-            diameter="48"
-            aria-label="Loading users"
-          />
-          <p>Loading user metadata…</p>
-        </div>
+          <div class="user-catalog__loading" role="status">
+            <mat-progress-spinner
+              mode="indeterminate"
+              diameter="48"
+              aria-label="Loading users"
+            />
+            <p>Loading user metadata…</p>
+          </div>
         } @else if (vm.catalog().error; as error) {
-        <p role="alert">{{ error }}</p>
-        <button matButton (click)="vm.retry()">Retry</button>
+          <p role="alert">{{ error }}</p>
+          <button matButton (click)="vm.retry()">Retry</button>
         } @else if (vm.catalog().data; as data) {
-        <ngx-user-metadata-list
-          [userMetadata]="data.data"
-          [total]="data.total"
-          [page]="data.page"
-          [pageSize]="data.limit"
-          [busy]="vm.write().pending > 0"
-          (paginationChange)="vm.page($event)"
-          (edit)="vm.edit($event)"
-          (remove)="vm.remove($event)"
-          (updateUserRole)="vm.role($event)"
-        />
+          <ngx-user-metadata-list
+            [userMetadata]="data.data"
+            [total]="data.total"
+            [page]="data.page"
+            [pageSize]="data.limit"
+            [busy]="vm.write().pending > 0"
+            (paginationChange)="vm.page($event)"
+            (edit)="vm.edit($event)"
+            (remove)="vm.remove($event)"
+            (updateUserRole)="vm.role($event)"
+          />
         }
       </section>
     </main>
