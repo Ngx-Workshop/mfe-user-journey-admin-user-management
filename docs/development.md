@@ -25,16 +25,17 @@ Assessment history continues to use the authenticated hosted service in both mod
 `--configuration development,hosted-api` clears the replacement for development
 against the existing host backend; it does not enable production optimizations.
 
-For a hosted shell calling the local backend, service-user-metadata needs CORS for
-https://admin.ngx-workshop.io and an appropriate isolated local authentication/data
-setup. Unlike service-document, it currently has no start:local script or local mode.
-No instance was listening on 3004 during this refactor. This checkout configures the
-consumer; those backend prerequisites are recorded in the handoff. Do not assume
-normal start:dev uses an isolated database or grants local admin access.
+The local backend setup is now implemented in service-user-metadata. With MongoDB
+on 127.0.0.1:27017, run `npm run seed:local` then `npm run start:local` in that service.
+It binds to 127.0.0.1:3004, uses only user_metadata_local, permits the shell origin,
+and supplies a synthetic local admin. Local role changes never sync to hosted auth.
+No production records are copied. Three synthetic users are provided for development.
+The served dist bundle now uses the normal development environment (local API).
 
-To keep the running bundle working while backend setup remains pending, build with
-`npm run build -- --configuration development,hosted-api`, then keep the existing
-bundle server. Use `npm run watch:hosted-api` for subsequent source changes.
+The shell still needs its browser-local remote override set to port 4201. Once
+selected, use `npm run dev:bundle` for local API development. The `hosted-api` overlay
+remains available for deliberately working with the existing host API. See the
+service's docs/local-development.md for isolation rules and verification commands.
 
 Build checks should use isolated output paths while a watch/server is active:
 `npm run build -- --output-path /tmp/user-management-production-check`.

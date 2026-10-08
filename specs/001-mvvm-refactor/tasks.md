@@ -14,9 +14,10 @@ live host/service integration; record remaining external checks in handoff.md.
 
 ## External verification
 
-- [ ] X001 — service-user-metadata: supply isolated local MongoDB/auth setup and
+- [x] X001 — service-user-metadata: supply isolated local MongoDB/auth setup and
   CORS for the hosted shell; then test disposable profile updates/role changes/deletion
-  against localhost:3004. No backend implementation was added without resolving scope.
+  against localhost:3004. User authorized backend setup on 2026-10-07; service unit/build and real isolated
+  MongoDB/HTTP checks pass.
 - [ ] X002 — host/browser: select the new local remote and verify catalog/deep links,
   filters, pagination, profile autosave/retry and assessment states. Current hosted
   route still renders the old bundle, so read-only observation is baseline evidence.

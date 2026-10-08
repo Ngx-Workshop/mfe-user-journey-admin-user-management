@@ -62,3 +62,14 @@ registry changes, real user mutations or package publishing were performed.
 All local T001–T007 tasks are implemented; X001/X002 remain visible as integration
 work. README, AGENTS, constitution, architecture, API contracts, development,
 readiness, source organization, migration record and feature index were updated.
+
+## Backend follow-up — 2026-10-07
+
+The user authorized service-user-metadata changes. Its explicit start:local mode now
+uses loopback, exact user_metadata_local database, approved-origin CORS and synthetic
+admin identity; seed:local provides three synthetic users. Hosted auth role sync is
+skipped only in local mode. 20 service tests, service build/OpenAPI generation and
+real MongoDB/HTTP profile/role/delete/CORS/validation checks pass. X001 is resolved.
+The served MFE dist now uses the local development environment. The local API was
+left running on port 3004. X002 host remote selection/browser integration remains
+pending; earlier evidence above records the state before this follow-up.

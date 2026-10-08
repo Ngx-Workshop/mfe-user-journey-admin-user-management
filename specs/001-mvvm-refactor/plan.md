@@ -48,3 +48,7 @@ origin. The hosted-api overlay supports current authenticated-host development.
 The backend scope question was presented while independent frontend work continued;
 no backend files or authentication behavior were changed. Local integration remains
 an explicit external prerequisite rather than a claimed verification result.
+
+2026-10-07 follow-up: the user authorized backend setup. service-user-metadata now
+provides the isolated local mode, seed fixtures and verified HTTP/Mongo journey;
+X001 is resolved. See that repository's specs/001-local-development/handoff.md.

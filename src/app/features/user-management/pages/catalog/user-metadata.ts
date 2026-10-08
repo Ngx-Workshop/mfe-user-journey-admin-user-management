@@ -3,10 +3,11 @@ import {
   Component,
   inject,
 } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
+import { MatButton, MatButtonModule } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { NgxParticleHeader } from '@tmdjr/ngx-shared-headers';
+import { UserMetadataActions } from '../../components/user-metadata-actions';
 import { UserMetadataFiltersComponent } from '../../components/user-metadata-filters';
 import { UserMetadataListComponent } from '../../components/user-metadata-list';
 import { CatalogViewModel } from './catalog.view-model';
@@ -17,17 +18,21 @@ import { CatalogViewModel } from './catalog.view-model';
     MatButtonModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
-    NgxParticleHeader,
+    UserMetadataActions,
     UserMetadataFiltersComponent,
     UserMetadataListComponent,
+    MatButton,
+    MatIcon,
   ],
   providers: [CatalogViewModel],
   template: `
-    <ngx-particle-header
-      ><h1 class="user-catalog__title">
-        User Management
-      </h1></ngx-particle-header
-    >
+    <ngx-user-metadata-actions>
+      <div class="flex-spacer"></div>
+      <button matButton="filled" (click)="createUser()">
+        <mat-icon>add</mat-icon>
+        Create User
+      </button>
+    </ngx-user-metadata-actions>
     <main class="user-catalog">
       <ngx-user-metadata-filters
         [query]="vm.searchQuery()"
@@ -41,29 +46,29 @@ import { CatalogViewModel } from './catalog.view-model';
         [attr.aria-busy]="vm.catalog().loading"
       >
         @if (vm.catalog().loading) {
-          <div class="user-catalog__loading" role="status">
-            <mat-progress-spinner
-              mode="indeterminate"
-              diameter="48"
-              aria-label="Loading users"
-            />
-            <p>Loading user metadata…</p>
-          </div>
-        } @else if (vm.catalog().error; as error) {
-          <p role="alert">{{ error }}</p>
-          <button matButton (click)="vm.retry()">Retry</button>
-        } @else if (vm.catalog().data; as data) {
-          <ngx-user-metadata-list
-            [userMetadata]="data.data"
-            [total]="data.total"
-            [page]="data.page"
-            [pageSize]="data.limit"
-            [busy]="vm.write().pending > 0"
-            (paginationChange)="vm.page($event)"
-            (edit)="vm.edit($event)"
-            (remove)="vm.remove($event)"
-            (updateUserRole)="vm.role($event)"
+        <div class="user-catalog__loading" role="status">
+          <mat-progress-spinner
+            mode="indeterminate"
+            diameter="48"
+            aria-label="Loading users"
           />
+          <p>Loading user metadata…</p>
+        </div>
+        } @else if (vm.catalog().error; as error) {
+        <p role="alert">{{ error }}</p>
+        <button matButton (click)="vm.retry()">Retry</button>
+        } @else if (vm.catalog().data; as data) {
+        <ngx-user-metadata-list
+          [userMetadata]="data.data"
+          [total]="data.total"
+          [page]="data.page"
+          [pageSize]="data.limit"
+          [busy]="vm.write().pending > 0"
+          (paginationChange)="vm.page($event)"
+          (edit)="vm.edit($event)"
+          (remove)="vm.remove($event)"
+          (updateUserRole)="vm.role($event)"
+        />
         }
       </section>
     </main>
@@ -101,4 +106,8 @@ import { CatalogViewModel } from './catalog.view-model';
 })
 export class UserMetadataPageComponent {
   readonly vm = inject(CatalogViewModel);
+
+  createUser() {
+    console.log('Create user clicked');
+  }
 }

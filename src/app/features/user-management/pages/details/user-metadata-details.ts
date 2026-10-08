@@ -4,8 +4,10 @@ import {
   inject,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import { AssessmentTestList } from '../../components/assessment-test-list';
+import { UserMetadataActions } from '../../components/user-metadata-actions';
 import { UserMetadataFormComponent } from '../../components/user-metadata-form';
 import { DetailsViewModel } from './details.view-model';
 
@@ -15,35 +17,42 @@ import { DetailsViewModel } from './details.view-model';
     UserMetadataFormComponent,
     AssessmentTestList,
     MatButtonModule,
+    MatIcon,
+    UserMetadataActions,
     RouterLink,
   ],
   providers: [DetailsViewModel],
   template: `
+    <ngx-user-metadata-actions>
+      <button matButton="filled" routerLink="../">
+        <mat-icon>arrow_back</mat-icon>
+        Back to User Metadata List
+      </button>
+    </ngx-user-metadata-actions>
     <main class="user-details">
-      <a matButton routerLink="../">Back to User Metadata List</a>
       <section
         class="user-details__card"
         [attr.aria-busy]="vm.profile().loading"
       >
         <h2>Edit user metadata</h2>
         @if (vm.profile().loading) {
-          <p role="status">Loading user…</p>
+        <p role="status">Loading user…</p>
         } @else if (vm.profile().error; as error) {
-          <p role="alert">{{ error }}</p>
-          <button matButton (click)="vm.retryProfile()">
-            Retry user
-          </button>
+        <p role="alert">{{ error }}</p>
+        <button matButton (click)="vm.retryProfile()">
+          Retry user
+        </button>
         } @else if (vm.profile().data; as user) {
-          <ngx-user-metadata-form
-            [userMetadata]="user"
-            [saving]="
-              vm.write().uuid === vm.uuid() && vm.write().pending > 0
-            "
-            [error]="
-              vm.write().uuid === vm.uuid() ? vm.write().error : null
-            "
-            (save)="vm.save($event)"
-          />
+        <ngx-user-metadata-form
+          [userMetadata]="user"
+          [saving]="
+            vm.write().uuid === vm.uuid() && vm.write().pending > 0
+          "
+          [error]="
+            vm.write().uuid === vm.uuid() ? vm.write().error : null
+          "
+          (save)="vm.save($event)"
+        />
         }
       </section>
       <section
@@ -52,14 +61,14 @@ import { DetailsViewModel } from './details.view-model';
       >
         <h2>Assessment Tests</h2>
         @if (vm.assessments().loading) {
-          <p role="status">Loading assessments…</p>
+        <p role="status">Loading assessments…</p>
         } @else if (vm.assessments().error; as error) {
-          <p role="alert">{{ error }}</p>
-          <button matButton (click)="vm.retryAssessments()">
-            Retry assessments
-          </button>
+        <p role="alert">{{ error }}</p>
+        <button matButton (click)="vm.retryAssessments()">
+          Retry assessments
+        </button>
         } @else if (vm.assessments().data; as assessments) {
-          <ngx-assessment-test-list [testInfo]="assessments" />
+        <ngx-assessment-test-list [testInfo]="assessments" />
         }
       </section>
     </main>

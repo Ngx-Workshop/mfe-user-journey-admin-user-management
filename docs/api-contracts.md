@@ -26,5 +26,6 @@ Both endpoints are read independently of profile loading; forkJoin groups the
 assessment requests and a local error state offers retry.
 
 The hosted shell/gateway supplies cookies for same-origin APIs. Direct local API
-requests need backend CORS and appropriate local authentication. The frontend does
-not create credentials or bypass authorization. Backend paths/schemas are unchanged.
+requests use service-user-metadata’s explicit local CORS/auth mode with synthetic
+admin identity and isolated user_metadata_local storage. The frontend does not
+create credentials or bypass authorization. Backend paths/schemas are unchanged.
