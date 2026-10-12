@@ -41,3 +41,12 @@ Build checks should use isolated output paths while a watch/server is active:
 `npm run build -- --output-path /tmp/user-management-production-check`.
 Tests use isolated HTTP responses, not production mutations. No lint command is
 configured. Angular 21 with federation/build tooling 20 is an inherited constraint.
+
+## Production bundle verification
+
+`npm run test:bundle` evaluates the built Component and Routes exposures before deployment.
+`npm run test:bundle-watch` checks an initial production compilation and two incremental
+compilations with isolated temporary output. These checks validate emitted code loading;
+they do not replace authenticated shell/browser integration. See
+[the investigation](../specs/002-production-federation/handoff.md) for the older
+MatButtonBase export failure and current bundle hashes.

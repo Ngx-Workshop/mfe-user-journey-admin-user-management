@@ -12,7 +12,9 @@
     "dev:bundle": "npm run watch & npm run serve:bundle",
     "check:layout": "node scripts/check-source-layout.mjs",
     "test:ci": "ng test --watch=false --browsers=ChromeHeadless",
-    "watch:hosted-api": "ng build --watch --configuration development,hosted-api"
+    "watch:hosted-api": "ng build --watch --configuration development,hosted-api",
+    "test:bundle": "node testing/build/check-federation.cjs dist/mfe-user-journey-admin-user-management",
+    "test:bundle-watch": "node scripts/check-watch-rebuild.mjs"
   },
   "private": true,
   "dependencies": {

@@ -48,6 +48,7 @@ jobs:
         run: |
           npm ci
           npm run build -- --configuration production
+          npm run test:bundle
           test -f dist/mfe-user-journey-admin-user-management/index.html
 
       - name: Copy static assets to frontend
