@@ -1,3 +1,5 @@
+import { NgxPanel } from '@tmdjr/ngx-workshop-design-system';
+import { NgxButton } from '@tmdjr/ngx-workshop-design-system';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -13,16 +15,29 @@ import { RoleFilter } from '../models/user-management.models';
 @Component({
   selector: 'ngx-user-metadata-filters',
   imports: [
+    NgxPanel,
+    NgxButton,
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
   ],
   template: `
-    <section class="user-filters" aria-label="User filters">
-      <div class="user-filters__header">
-        <h3>Filters</h3>
-        <button matButton type="button" (click)="clear.emit()">
+    <ngx-panel
+      heading="Filter console"
+      eyebrow="DIRECTORY / FILTER"
+      background="solid"
+      class="user-filters"
+      aria-label="User filters"
+    >
+      <div ngxPanelHeader class="user-filters__header">
+        <button
+          mat-flat-button
+          ngxButton
+          surface="outline"
+          type="button"
+          (click)="clear.emit()"
+        >
           Clear All
         </button>
       </div>
@@ -43,6 +58,7 @@ import { RoleFilter } from '../models/user-management.models';
         <mat-form-field appearance="outline">
           <mat-label>Roles</mat-label>
           <mat-select
+            panelClass="ngx-design-system-overlay ngx-select-panel"
             [value]="role()"
             (valueChange)="roleChange.emit($event)"
           >
@@ -53,15 +69,11 @@ import { RoleFilter } from '../models/user-management.models';
           </mat-select>
         </mat-form-field>
       </div>
-    </section>
+    </ngx-panel>
   `,
   styles: [
     `
       .user-filters {
-        background: var(--mat-sys-surface-container-low);
-        padding: 1.5rem;
-        border-radius: 12px;
-        margin-bottom: 2rem;
         &__header {
           display: flex;
           align-items: center;
@@ -70,10 +82,10 @@ import { RoleFilter } from '../models/user-management.models';
         &__fields {
           display: flex;
           gap: 1rem;
-          flex-wrap: wrap;
+          flex-direction: column;
         }
         &__search {
-          flex: 1 1 240px;
+          width: 100%;
         }
       }
     `,

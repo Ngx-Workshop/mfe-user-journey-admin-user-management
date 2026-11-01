@@ -34,7 +34,24 @@ export interface ProfileChange {
   uuid: string;
   payload: UpdateUserMetadataDto;
 }
+export interface CreateAccountRequest {
+  requestId: string;
+  email: string;
+  password: string;
+  role: UserMetadataDto['role'];
+  firstName: string;
+  lastName: string;
+  avatarUrl: string;
+  description: string;
+}
+export interface CreationState {
+  requestId: string;
+  pending: boolean;
+  user: UserMetadataDto | null;
+  error: string | null;
+}
 export type UserCommand =
+  | { kind: 'create'; uuid: string; payload: CreateAccountRequest }
   | ({ kind: 'profile' } & ProfileChange)
   | { kind: 'role'; uuid: string; role: UserMetadataDto['role'] }
   | { kind: 'delete'; uuid: string };
@@ -43,4 +60,5 @@ export interface WriteState {
   pending: number;
   error: string | null;
   message: string | null;
+  kind?: UserCommand['kind'];
 }

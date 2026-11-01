@@ -1,3 +1,4 @@
+import { NgxButton } from '@tmdjr/ngx-workshop-design-system';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -20,6 +21,7 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
 @Component({
   selector: 'ngx-user-metadata-list',
   imports: [
+    NgxButton,
     MatTableModule,
     MatPaginatorModule,
     MatButtonModule,
@@ -31,7 +33,7 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
   template: `
     <section class="user-list" aria-label="User metadata list">
       <div class="user-list__header">
-        <h2>User Metadata</h2>
+        <span>{{ total }} profiles</span>
         <div class="user-list__flex-spacer"></div>
         <mat-paginator
           [length]="total"
@@ -39,6 +41,9 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
           [pageSize]="pageSize"
           [pageSizeOptions]="[5, 10, 20, 50]"
           (page)="onPageChange($event)"
+          [selectConfig]="{
+            panelClass: 'ngx-design-system-overlay ngx-select-panel',
+          }"
           aria-label="Pagination"
         ></mat-paginator>
       </div>
@@ -47,11 +52,13 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
           mat-table
           [dataSource]="userMetadata"
           class="user-list__table"
+          aria-label="User metadata"
         >
           <ng-container matColumnDef="role">
             <th mat-header-cell *matHeaderCellDef>Role</th>
             <td mat-cell *matCellDef="let item">
               <mat-select
+                panelClass="ngx-design-system-overlay ngx-select-panel"
                 class="user-list__role-select"
                 hideSingleSelectionIndicator
                 [disabled]="busy"
@@ -87,7 +94,7 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
               {{ item.email || '—' }}
             </td>
           </ng-container>
-          <ng-container matColumnDef="actions">
+          <ng-container matColumnDef="actions" stickyEnd>
             <th
               mat-header-cell
               *matHeaderCellDef
@@ -102,6 +109,7 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
             >
               <button
                 mat-icon-button
+                matTooltipClass="ngx-design-system-overlay"
                 matTooltip="Edit"
                 type="button"
                 (click)="edit.emit(item)"
@@ -111,6 +119,7 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
               </button>
               <button
                 mat-icon-button
+                matTooltipClass="ngx-design-system-overlay"
                 matTooltip="Delete"
                 type="button"
                 (click)="remove.emit(item)"
@@ -130,7 +139,34 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
         </table>
       } @else {
         <div class="user-list__empty-state">
-          <p>No user metadata found.</p>
+          <p>
+            {{
+              filtered
+                ? 'No matching users.'
+                : 'No user metadata found.'
+            }}
+          </p>
+          @if (filtered) {
+            <button
+              mat-flat-button
+              ngxButton
+              surface="outline"
+              type="button"
+              (click)="clearFilters.emit()"
+            >
+              Clear filters
+            </button>
+          } @else {
+            <button
+              mat-flat-button
+              ngxButton
+              shape="chevron"
+              type="button"
+              (click)="create.emit()"
+            >
+              Create User
+            </button>
+          }
         </div>
       }
     </section>
@@ -139,6 +175,8 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
     `
       @use '@angular/material' as mat;
       :host {
+        display: block;
+        min-width: 0;
         width: 100%;
 
         .user-list__header {
@@ -158,13 +196,13 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
       }
 
       mat-paginator {
-        background: var(--mat-sys-surface-container-low);
+        background: var(--ngx-color-surface-high);
       }
 
       .user-list__table {
-        min-width: 750px;
-        padding: 1.5rem;
-        background: var(--mat-sys-surface-container-high);
+        min-width: 700px;
+
+        background: var(--ngx-color-surface-high);
         border-radius: var(
           --mat-card-elevated-container-shape,
           var(--mat-sys-corner-medium)
@@ -172,7 +210,11 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
       }
 
       .user-list__data-row:hover {
-        background-color: var(--mat-sys-secondary-container);
+        background-color: color-mix(
+          in srgb,
+          var(--ngx-color-primary) 8%,
+          var(--ngx-color-surface-high)
+        );
       }
 
       .user-list__empty-state {
@@ -181,6 +223,9 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
         color: var(--mat-sys-on-surface);
       }
 
+      .user-list__actions-column {
+        background: var(--ngx-color-surface-high);
+      }
       .user-list__role-select {
         width: 100px;
         font-size: 0.85rem;
@@ -203,6 +248,9 @@ export class UserMetadataListComponent {
   pageSize = 10;
 
   @Input() busy = false;
+  @Input() filtered = false;
+  @Output() create = new EventEmitter<void>();
+  @Output() clearFilters = new EventEmitter<void>();
 
   @Output()
   paginationChange = new EventEmitter<{

@@ -36,7 +36,7 @@ The service remains responsible for admin authorization.
 `app.ts` retains default App. `webpack.config.js` retains legacy `ngx-seed-mfe`,
 remoteEntry.js and ./Component / ./Routes; Material/CDK requirements now match the
 installed 21.1.0. Shell and remote must share compatible Angular/Material versions.
-No dependency version or API schema changes are introduced.
+Feature 003 adds the design-system dependency and admin provisioning API described below.
 
 ## State lifecycle
 
@@ -46,3 +46,35 @@ also refresh it to restore server truth. Profile failures retain local edits and
 retry. Writes are serialized across users to preserve backend order. Pending writes
 are reflected in the UI and guard repeated role/delete actions. Debounced edits not
 yet accepted by the store are not guaranteed to survive navigation/browser shutdown.
+
+## Design system and complete journeys — 2026-10-31
+
+The App host scopes ngx-design-system and retains only its router outlet. The old
+particle header is retired. Catalog/detail/create use shared NgxActionBar,
+NgxSaveFeedback, NgxInlineStatus, NgxPanel and NgxButton; standalone theme() supplies
+root/overlay policy while hosted views inherit shell globals. Owned selects and
+paginator panels opt into ngx-select-panel. Semantic surfaces and bounded scrolling
+keep the table usable without horizontal page overflow; action columns remain sticky.
+
+Catalog supports search/role/reset/pagination, explicit empty versus search-miss
+recovery, profile navigation, role changes and confirmed metadata deletion. Details
+adds role and lifecycle controls; failed role changes restore their value and retain
+invalid/dirty profile drafts. Metadata deletion disables the editor and returns to
+the current mount's directory after confirmed completion. It leaves the identity.
+Assessments remain independent and read-only for the selected user; a misleading
+Start Test link that would act as the current administrator is removed.
+
+The static user-metadata/new route precedes :userId. Its scoped CreateUserViewModel
+owns a three-step form and stable request ID; fields/review are presentational.
+The root store serializes the create command with existing writes and exposes a
+scoped creation result. Success navigation waits for queue finalization and opens
+the persisted UUID relative to the shell mount. Accepted writes block route exit;
+pending creation disables fields/submission. Password confirmation is never sent,
+credentials are transient and clear on completion/destruction. Same-account retries
+reuse the operation ID; changing email/role starts a new operation. No draft survives
+reload. Backend authorization and safe account/profile retry belong to the services.
+
+Details role choices have local optimistic presentation and roll back after failure;
+profile transport/payloads remain separate. Profile edits still debounce for 500ms,
+exclude UUID/role and preserve blank clearing. Dirty same-ID refreshes retain drafts;
+a new UUID resets the editor. Shared feedback reflects actual root write state.

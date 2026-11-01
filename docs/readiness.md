@@ -31,3 +31,15 @@ blank-field clearing, role changes and deletion. Normal authentication is retain
 outside local mode; local role changes skip hosted auth synchronization.
 The MFE development bundle was rebuilt for the local API. X001 backend setup is
 resolved; X002 host selection/end-to-end browser verification remains pending.
+
+## 2026-10-31 migration update
+
+Earlier missing Create User/host-selection observations are superseded by feature
+003. The migrated local MFE renders in the authenticated admin shell at the supplied
+/user-management/user-metadata mount. Account creation now provisions a real local
+identity and profile via the additive auth/metadata API. Create submission/guard/retry
+are tested with real components and HTTP doubles; isolated MongoDB/HTTP verification
+also proves real sign-in and role synchronization. The browser is used for rendered
+navigation, empty/error recovery, overlays and mobile layout; no account credentials
+were entered through browser automation. Production rollout and ingress/index/JWT
+compatibility remain external checks, and no deployment was performed.

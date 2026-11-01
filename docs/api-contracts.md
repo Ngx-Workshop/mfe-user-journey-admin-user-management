@@ -6,6 +6,7 @@ The backend controller prefix is `user-metadata`; port defaults to 3004.
 
 | Operation | Method and relative metadata path | Payload / response |
 | --- | --- | --- |
+| Create account + profile | POST `/admin/users` | requestId, email, password, role and optional profile fields → UserMetadataDto (201) |
 | Browse | GET `/all` | page, limit, optional query/role; data, total, page, limit, totalPages |
 | Read profile | GET `/:uuid/find-one` | UserMetadataDto; legacy redundant uuid query retained |
 | Edit profile | PATCH `/:uuid/admin-override` | firstName, lastName, email, avatarUrl, description |
@@ -14,9 +15,11 @@ The backend controller prefix is `user-metadata`; port defaults to 3004.
 
 DTOs use `@tmdjr/user-metadata-contracts` ^0.0.46. Profile updates explicitly
 exclude UUID and role. Optional strings are trimmed; empty strings intentionally
-clear existing values. UUID is disabled in the form. There is no admin create-user
-flow in this remote or matching admin create endpoint; the inherited inactive action
-was removed. Deletion concerns metadata, not the identity provider account.
+clear existing values. UUID is disabled in the form. The routed Create User wizard uses the additive admin provisioning endpoint.
+Auth creates the actual identity; metadata persists its profile under the returned
+UUID. The admin session is preserved. Reuse requestId on retry, and report 409/email
+conflicts or a recoverable account/profile failure. This request is typed locally
+until generated contracts are published; no NPM version was guessed. Deletion concerns metadata, not the identity provider account.
 
 Assessment contracts use `@tmdjr/service-nestjs-assessment-test-contracts` 0.0.15.
 GET `/admin-user-asssessments/:uuid` (existing server spelling) and
@@ -27,5 +30,6 @@ assessment requests and a local error state offers retry.
 
 The hosted shell/gateway supplies cookies for same-origin APIs. Direct local API
 requests use service-user-metadata’s explicit local CORS/auth mode with synthetic
-admin identity and isolated user_metadata_local storage. The frontend does not
-create credentials or bypass authorization. Backend paths/schemas are unchanged.
+admin identity and isolated user_metadata_local storage. The frontend submits transient account credentials to the authorized provisioning
+endpoint; the backend owns hashing and authorization. Existing endpoint contracts
+remain available; the new provisioning endpoint is additive.

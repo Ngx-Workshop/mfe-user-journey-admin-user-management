@@ -10,6 +10,10 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { UserMetadataActions } from '../../components/user-metadata-actions';
 import { UserMetadataFiltersComponent } from '../../components/user-metadata-filters';
 import { UserMetadataListComponent } from '../../components/user-metadata-list';
+import {
+  NgxPanel,
+  NgxButton,
+} from '@tmdjr/ngx-workshop-design-system';
 import { CatalogViewModel } from './catalog.view-model';
 
 @Component({
@@ -23,12 +27,22 @@ import { CatalogViewModel } from './catalog.view-model';
     UserMetadataListComponent,
     MatButton,
     MatIcon,
+    NgxPanel,
+    NgxButton,
   ],
   providers: [CatalogViewModel],
   template: `
-    <ngx-user-metadata-actions>
-      <div class="flex-spacer"></div>
-      <button matButton="filled" (click)="createUser()">
+    <ngx-user-metadata-actions
+      [write]="vm.write()"
+      [count]="vm.catalog().data?.total ?? null"
+    >
+      <button
+        mat-flat-button
+        ngxButton
+        shape="chevron"
+        surface="outline"
+        (click)="vm.create()"
+      >
         <mat-icon>add</mat-icon>
         Create User
       </button>
@@ -41,7 +55,11 @@ import { CatalogViewModel } from './catalog.view-model';
         (roleChange)="vm.filterRole($event)"
         (clear)="vm.clear()"
       />
-      <section
+      <ngx-panel
+        heading="User directory"
+        eyebrow="ACCOUNTS / PROFILES"
+        shape="chamfered"
+        background="solid"
         class="user-catalog__card"
         [attr.aria-busy]="vm.catalog().loading"
       >
@@ -56,7 +74,14 @@ import { CatalogViewModel } from './catalog.view-model';
           </div>
         } @else if (vm.catalog().error; as error) {
           <p role="alert">{{ error }}</p>
-          <button matButton (click)="vm.retry()">Retry</button>
+          <button
+            mat-flat-button
+            ngxButton
+            surface="outline"
+            (click)="vm.retry()"
+          >
+            Retry
+          </button>
         } @else if (vm.catalog().data; as data) {
           <ngx-user-metadata-list
             [userMetadata]="data.data"
@@ -68,36 +93,38 @@ import { CatalogViewModel } from './catalog.view-model';
             (edit)="vm.edit($event)"
             (remove)="vm.remove($event)"
             (updateUserRole)="vm.role($event)"
+            (create)="vm.create()"
+            (clearFilters)="vm.clear()"
+            [filtered]="
+              !!vm.query().query || vm.query().role !== 'all'
+            "
           />
         }
-      </section>
+      </ngx-panel>
     </main>
   `,
   styles: [
     `
       .user-catalog {
-        max-width: 1400px;
-        width: 90%;
-        margin: auto;
+        display: grid;
+        grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+        gap: var(--ngx-space-4);
         padding: 1rem;
-        box-sizing: border-box;
-        &__title {
-          font-size: 1.85rem;
-          font-weight: 100;
-          margin: 1.7rem 1rem;
-        }
-        &__card {
-          background: var(--mat-sys-surface-container-low);
-          padding: 1.5rem;
-          border-radius: 12px;
-          min-height: 300px;
-        }
-        &__loading {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 1rem;
-          padding: 3rem 1rem;
+        align-items: start;
+      }
+      .user-catalog__card {
+        min-width: 0;
+      }
+      .user-catalog__loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        padding: 2rem;
+      }
+      @media (max-width: 1000px) {
+        .user-catalog {
+          grid-template-columns: minmax(0, 1fr);
         }
       }
     `,
@@ -106,8 +133,4 @@ import { CatalogViewModel } from './catalog.view-model';
 })
 export class UserMetadataPageComponent {
   readonly vm = inject(CatalogViewModel);
-
-  createUser() {
-    console.log('Create user clicked');
-  }
 }

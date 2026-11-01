@@ -8,6 +8,7 @@ import { Observable } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
 import {
+  CreateAccountRequest,
   PaginatedUserMetadataDto,
   PaginationOptions,
 } from '../models/user-management.models';
@@ -16,6 +17,13 @@ import {
 export class UserMetadataApi {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.userMetadataApiBaseUrl;
+
+  create(payload: CreateAccountRequest): Observable<UserMetadataDto> {
+    return this.http.post<UserMetadataDto>(
+      `${this.baseUrl}/admin/users`,
+      payload
+    );
+  }
 
   findAll(
     params: PaginationOptions = {}

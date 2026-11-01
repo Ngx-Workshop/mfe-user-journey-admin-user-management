@@ -1,3 +1,4 @@
+import { NgxButton } from '@tmdjr/ngx-workshop-design-system';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -17,19 +18,38 @@ import { UserMetadataDto } from '@tmdjr/user-metadata-contracts';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'ngx-confirm-delete-dialog',
   imports: [
+    NgxButton,
     MatButton,
     MatDialogTitle,
     MatDialogContent,
     MatDialogActions,
   ],
   template: `
-    <h3 mat-dialog-title>Confirm Delete</h3>
+    <h3 mat-dialog-title>Delete user metadata?</h3>
     <mat-dialog-content>
-      <p>Are you sure you want to delete this User's Metadata?</p>
+      <p>
+        Delete the profile for {{ user.email || user.uuid }}? The
+        sign-in account will remain. This cannot be undone.
+      </p>
     </mat-dialog-content>
     <mat-dialog-actions>
-      <button matButton (click)="dialogRef.close()">Cancel</button>
-      <button matButton (click)="confirmDelete()">Delete</button>
+      <button
+        mat-flat-button
+        ngxButton
+        surface="outline"
+        (click)="dialogRef.close()"
+      >
+        Cancel
+      </button>
+      <button
+        mat-flat-button
+        ngxButton
+        surface="outline"
+        tone="danger"
+        (click)="confirmDelete()"
+      >
+        Delete
+      </button>
     </mat-dialog-actions>
   `,
   styles: [

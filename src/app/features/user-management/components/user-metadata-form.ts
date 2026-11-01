@@ -1,3 +1,4 @@
+import { NgxButton } from '@tmdjr/ngx-workshop-design-system';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -20,6 +21,7 @@ import { ProfileChange } from '../models/user-management.models';
   selector: 'ngx-user-metadata-form',
   providers: [ProfileFormViewModel],
   imports: [
+    NgxButton,
     ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
@@ -77,7 +79,9 @@ import { ProfileChange } from '../models/user-management.models';
       @if (error(); as message) {
         <p role="alert">{{ message }} Edits are retained.</p>
         <button
-          matButton
+          mat-flat-button
+          ngxButton
+          surface="outline"
           type="submit"
           [disabled]="form.invalid || saving()"
         >
@@ -105,7 +109,10 @@ import { ProfileChange } from '../models/user-management.models';
 
       .metadata-form__field-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        grid-template-columns: repeat(
+          auto-fit,
+          minmax(min(100%, 240px), 1fr)
+        );
         gap: 1rem;
       }
 
@@ -125,10 +132,16 @@ export class UserMetadataFormComponent {
   readonly form = this.vm.form;
   readonly userMetadata = input.required<UserMetadataDto>();
   readonly saving = input(false);
+  readonly locked = input(false);
   readonly error = input<string | null>(null);
   readonly save = output<ProfileChange>();
   constructor() {
     effect(() => this.vm.setUser(this.userMetadata()));
+    effect(() => {
+      if (this.locked()) this.form.disable({ emitEvent: false });
+      else this.form.enable({ emitEvent: false });
+      this.form.controls.uuid.disable({ emitEvent: false });
+    });
     this.vm.changes$
       .pipe(takeUntilDestroyed())
       .subscribe((change) => this.save.emit(change));

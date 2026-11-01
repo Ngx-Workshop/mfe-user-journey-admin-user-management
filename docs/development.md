@@ -50,3 +50,23 @@ compilations with isolated temporary output. These checks validate emitted code 
 they do not replace authenticated shell/browser integration. See
 [the investigation](../specs/002-production-federation/handoff.md) for the older
 MatButtonBase export failure and current bundle hashes.
+
+## Account provisioning and migration verification
+
+The declared design-system 21.0.10 dependency is now installed and locked. User-owned
+manifest/federation edits are preserved. Shared shell runtime must provide the same
+compatible package; its root theme emits overlay policy. No local overlay fixes or
+private Material selectors are added.
+
+Keep the two existing local processes running, plus service-auth's
+npm run start:admin-local on loopback:3005. This creates real local identities in
+an isolated auth_users_local database. Hosted production auth is never called by
+metadata local mode. Production requires the additive auth+metadata endpoints and
+indexes described in the service provisioning guides before deploying this remote.
+
+New create UI tests cover password mismatch/weak credentials, early-submit rejection,
+step retention, exact payload, stable retry ID, duplicate/pending navigation guards
+and host-relative UUID completion. Details tests cover role failure/draft retention,
+confirmation/cancel, deletion locking/navigation and assessment independence.
+The watch regression now touches the active action component instead of the removed
+particle hero, ensuring all three builds exercise actual graph changes.

@@ -1,3 +1,4 @@
+import { NgxStatus } from '@tmdjr/ngx-workshop-design-system';
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -9,20 +10,19 @@ import { MatDivider } from '@angular/material/divider';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { RouterLink } from '@angular/router';
 import { TestInfoViewModel } from '../models/assessment.models';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'ngx-assessment-test-list',
   imports: [
+    NgxStatus,
     CommonModule,
     MatExpansionModule,
     MatProgressBarModule,
     MatDivider,
     MatButtonModule,
     MatIconModule,
-    RouterLink,
   ],
   template: `
     @if (testInfo(); as vm) {
@@ -50,11 +50,7 @@ import { TestInfoViewModel } from '../models/assessment.models';
                 @for (test of subject.incompleteTests; track $index) {
                   <div class="assessments__incomplete-test">
                     <h3>{{ test.testName }}</h3>
-                    <a
-                      mat-stroked-button
-                      routerLink="/assessment-test"
-                      >Start Test</a
-                    >
+                    <ngx-status label="Not attempted" tone="info" />
                   </div>
                 }
               </div>
@@ -87,7 +83,9 @@ import { TestInfoViewModel } from '../models/assessment.models';
   `,
   styles: [
     `
+      @use '@tmdjr/ngx-workshop-design-system/theme' as ngx;
       :host {
+        @include ngx.expansion-theme();
         i {
           font-size: 1.5rem;
           inline-size: 2rem;

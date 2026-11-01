@@ -34,6 +34,15 @@ describe('ProfileFormViewModel', () => {
     expect('uuid' in changes[0].payload).toBeFalse();
     expect(vm.form.controls.uuid.disabled).toBeTrue();
   });
+  it('keeps dirty same-user drafts across canonical refreshes and resets for another UUID', () => {
+    vm.form.controls.firstName.setValue('Unsaved draft');
+    vm.form.markAsDirty();
+    vm.setUser(user('u1'));
+    expect(vm.form.controls.firstName.value).toBe('Unsaved draft');
+    vm.setUser(user('u2'));
+    expect(vm.form.controls.firstName.value).toBe('Original');
+    expect(vm.form.pristine).toBeTrue();
+  });
   it('preserves blank strings for clearing optional fields', () => {
     vm.form.controls.firstName.setValue('  ');
     jasmine.clock().tick(500);

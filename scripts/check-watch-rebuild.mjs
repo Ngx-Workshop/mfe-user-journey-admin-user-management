@@ -39,7 +39,7 @@ try {
     console.log(`Production watch build ${cycle}: ${stdout.trim().replaceAll('\n', '; ')}`);
     if (cycle < 3) {
       // Trigger independent Angular compilation paths without changing content.
-      const file = cycle === 1 ? 'src/app/features/user-management/pages/catalog/user-metadata.ts' : 'src/app/features/user-management/components/user-metadata-header.ts';
+      const file = cycle === 1 ? 'src/app/features/user-management/pages/catalog/user-metadata.ts' : 'src/app/features/user-management/components/user-metadata-actions.ts';
       const now = new Date(); await utimes(file, now, now);
     }
   }

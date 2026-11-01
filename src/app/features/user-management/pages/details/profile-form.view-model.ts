@@ -38,6 +38,11 @@ export class ProfileFormViewModel {
     )
   );
   setUser(user: UserMetadataDto): void {
+    if (
+      this.form.controls.uuid.value === user.uuid &&
+      this.form.dirty
+    )
+      return;
     this.reset$.next();
     this.form.reset(
       {

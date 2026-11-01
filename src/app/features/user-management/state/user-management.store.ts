@@ -21,6 +21,7 @@ import { UserMetadataApi } from '../api/user-metadata.api';
 import { AssessmentTestsApiService } from '../api/assessment-tests.api';
 import { toTestInfoViewModel } from '../models/assessment.models';
 import {
+  CreationState,
   CatalogQuery,
   UserCommand,
   WriteState,
@@ -38,6 +39,14 @@ export class UserManagementStore {
     role: 'all',
   });
   private readonly refreshSubject = new BehaviorSubject(0);
+  private readonly creationSubject =
+    new BehaviorSubject<CreationState>({
+      requestId: '',
+      pending: false,
+      user: null,
+      error: null,
+    });
+  readonly creation$ = this.creationSubject.asObservable();
   private readonly commands = new Subject<UserCommand>();
   private readonly writeSubject = new BehaviorSubject<WriteState>({
     uuid: '',
@@ -75,20 +84,30 @@ export class UserManagementStore {
             this.writeSubject.next({
               ...this.writeSubject.value,
               uuid: command.uuid,
+              kind: command.kind,
               error: null,
               message: null,
             });
             const request: Observable<unknown> =
-              command.kind === 'profile'
-                ? this.users.update(command.uuid, command.payload)
-                : command.kind === 'role'
-                  ? this.users.updateUserRole(
-                      command.uuid,
-                      command.role
-                    )
-                  : this.users.remove(command.uuid);
+              command.kind === 'create'
+                ? this.users.create(command.payload)
+                : command.kind === 'profile'
+                  ? this.users.update(command.uuid, command.payload)
+                  : command.kind === 'role'
+                    ? this.users.updateUserRole(
+                        command.uuid,
+                        command.role
+                      )
+                    : this.users.remove(command.uuid);
             return request.pipe(
-              tap(() => {
+              tap((result) => {
+                if (command.kind === 'create')
+                  this.creationSubject.next({
+                    requestId: command.uuid,
+                    pending: false,
+                    user: result as import('@tmdjr/user-metadata-contracts').UserMetadataDto,
+                    error: null,
+                  });
                 this.writeSubject.next({
                   ...this.writeSubject.value,
                   error: null,
@@ -102,7 +121,17 @@ export class UserManagementStore {
                 );
                 this.refresh();
               }),
-              catchError(() => {
+              catchError((error) => {
+                if (command.kind === 'create')
+                  this.creationSubject.next({
+                    requestId: command.uuid,
+                    pending: false,
+                    user: null,
+                    error:
+                      typeof error.error?.message === 'string'
+                        ? error.error.message
+                        : 'Unable to create the account. Retry this request safely.',
+                  });
                 if (command.kind !== 'profile') this.refresh();
                 this.writeSubject.next({
                   ...this.writeSubject.value,
@@ -204,6 +233,9 @@ export class UserManagementStore {
       shareReplay({ bufferSize: 1, refCount: true })
     );
   }
+  get pending() {
+    return this.writeSubject.value.pending;
+  }
   execute(command: UserCommand): void {
     // Role/delete controls are disabled while commands are pending; guard repeats too.
     if (command.kind !== 'profile' && this.writeSubject.value.pending)
@@ -212,6 +244,13 @@ export class UserManagementStore {
       ...this.writeSubject.value,
       pending: this.writeSubject.value.pending + 1,
     });
+    if (command.kind === 'create')
+      this.creationSubject.next({
+        requestId: command.uuid,
+        pending: true,
+        user: null,
+        error: null,
+      });
     this.commands.next(command);
   }
 }

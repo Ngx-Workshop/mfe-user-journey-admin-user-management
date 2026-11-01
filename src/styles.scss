@@ -1,1 +1,9 @@
-/* Intentionally empty: styles are injected at runtime for remote MFEs. */
+@use '@tmdjr/ngx-workshop-design-system/theme' as ngx;
+// Standalone fallback. Federated views receive the same globals from the shell.
+@include ngx.theme();
+html {
+  min-width: 320px;
+}
+body {
+  margin: 0;
+}

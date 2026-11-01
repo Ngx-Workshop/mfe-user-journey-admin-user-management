@@ -71,6 +71,9 @@ export class CatalogViewModel {
   retry(): void {
     this.store.refresh();
   }
+  create(): void {
+    void this.router.navigate(['new'], { relativeTo: this.route });
+  }
   edit(user: UserMetadataDto): void {
     void this.router.navigate([user.uuid], {
       relativeTo: this.route,
@@ -86,7 +89,12 @@ export class CatalogViewModel {
   remove(user: UserMetadataDto): void {
     if (this.write().pending) return;
     this.dialog
-      .open(ConfirmDeleteDialog, { data: user })
+      .open(ConfirmDeleteDialog, {
+        data: user,
+        panelClass: 'ngx-design-system-overlay',
+        backdropClass: 'ngx-design-system-backdrop',
+        maxWidth: 'calc(100vw - 32px)',
+      })
       .afterClosed()
       .pipe(filter(Boolean), takeUntilDestroyed(this.destroyRef))
       .subscribe(() =>
