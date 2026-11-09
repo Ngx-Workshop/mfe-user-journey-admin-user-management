@@ -33,3 +33,12 @@ requests use service-user-metadata’s explicit local CORS/auth mode with synthe
 admin identity and isolated user_metadata_local storage. The frontend submits transient account credentials to the authorized provisioning
 endpoint; the backend owns hashing and authorization. Existing endpoint contracts
 remain available; the new provisioning endpoint is additive.
+
+## Social website sign-in
+
+Google/GitHub identities are owned by service-auth; Apple rollout is deferred. Social accounts use the
+same local UUID/profile/role APIs, so the directory, details and role controls need
+no new DTOs. Provider credentials and subjects are not editable metadata. The Create
+User wizard still provisions password accounts. Metadata deletion still leaves the
+auth identity; account linking/unlinking is not exposed. See the [auth rollout guide](https://github.com/Ngx-Workshop/service-auth/blob/main/docs/social-login.md)
+for rollout and real-provider acceptance requirements.
